@@ -1,0 +1,16 @@
+{
+  "parent": "iblis:item/firearm_display",
+  "loader": "forge:obj",
+  "model": "iblis:models/item/six_barrels_shotgun_reloading.obj",
+  "automatic_culling": false,
+  "flip_v": true,
+  "emissive_ambient": false,
+  "overrides": [
+    { "predicate": { "iblis:ammo": 1 }, "model": "iblis:item/six_barrels_shotgun_reloading_1" },
+    { "predicate": { "iblis:ammo": 2 }, "model": "iblis:item/six_barrels_shotgun_reloading_2" },
+    { "predicate": { "iblis:ammo": 3 }, "model": "iblis:item/six_barrels_shotgun_reloading_3" },
+    { "predicate": { "iblis:ammo": 4 }, "model": "iblis:item/six_barrels_shotgun_reloading_4" },
+    { "predicate": { "iblis:ammo": 5 }, "model": "iblis:item/six_barrels_shotgun_reloading_5" },
+    { "predicate": { "iblis:ammo": 6 }, "model": "iblis:item/six_barrels_shotgun_reloading_6" }
+  ]
+}

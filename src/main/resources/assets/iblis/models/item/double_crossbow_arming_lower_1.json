@@ -1,0 +1,8 @@
+{
+  "parent": "iblis:item/crossbow_reloading_display",
+  "loader": "forge:obj",
+  "model": "iblis:models/item/double_crossbow_arming_lower_1.obj",
+  "automatic_culling": false,
+  "flip_v": true,
+  "emissive_ambient": false
+}

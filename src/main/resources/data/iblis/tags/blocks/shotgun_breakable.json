@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "#forge:glass",
+    "#forge:glass_panes",
+    "#minecraft:ice",
+    "#iblis:shotgun_breakable_vegetation",
+    "#iblis:shotgun_breakable_wooden_barriers",
+    "#iblis:shotgun_breakable_fragile_blocks"
+  ]
+}

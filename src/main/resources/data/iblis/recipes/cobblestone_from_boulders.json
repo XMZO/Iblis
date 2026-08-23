@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "iblis:boulder" }, { "item": "iblis:boulder" },
+    { "item": "iblis:boulder" }, { "item": "iblis:boulder" }
+  ],
+  "result": { "item": "minecraft:cobblestone" }
+}

@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [" I ", " P ", " S "],
+  "key": {
+    "I": { "tag": "forge:ingots/iron" },
+    "P": { "tag": "minecraft:planks" },
+    "S": { "tag": "forge:rods/wooden" }
+  },
+  "result": { "item": "iblis:crossbow_bolt", "count": 8 }
+}

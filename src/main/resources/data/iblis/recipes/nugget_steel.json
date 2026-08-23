@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [{ "tag": "forge:ingots/steel" }],
+  "result": { "item": "iblis:nugget_steel", "count": 9 }
+}

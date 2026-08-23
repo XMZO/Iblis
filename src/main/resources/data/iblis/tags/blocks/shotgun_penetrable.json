@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "#iblis:shotgun_breakable_vegetation",
+    "#minecraft:wooden_fences",
+    "#forge:fence_gates",
+    "minecraft:iron_bars",
+    "#iblis:shotgun_penetrable_chains",
+    "minecraft:cobweb",
+    "minecraft:snow",
+    "minecraft:powder_snow"
+  ]
+}

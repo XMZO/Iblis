@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["P P", "LIL", " P "],
+  "key": {
+    "P": { "tag": "minecraft:planks" },
+    "L": { "tag": "forge:leather" },
+    "I": { "tag": "forge:ingots/iron" }
+  },
+  "result": {
+    "item": "iblis:heavy_shield",
+    "nbt": "{durability:600}"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [
+        { "type": "iblis:config_enabled", "option": "medkit" }
+      ],
+      "recipe": {
+        "type": "minecraft:crafting_shaped",
+        "pattern": ["S  ", "SLW", "SI "],
+        "key": {
+          "S": { "tag": "forge:string" },
+          "L": { "tag": "forge:leather" },
+          "W": {
+            "type": "forge:partial_nbt",
+            "item": "minecraft:potion",
+            "nbt": "{Potion:\"minecraft:water\"}"
+          },
+          "I": { "tag": "forge:ingots/iron" }
+        },
+        "result": { "item": "iblis:non-sterile_medkit" }
+      }
+    }
+  ]
+}

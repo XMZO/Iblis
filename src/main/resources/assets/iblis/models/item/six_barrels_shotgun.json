@@ -1,0 +1,11 @@
+{
+  "parent": "iblis:item/firearm_display",
+  "loader": "forge:obj",
+  "model": "iblis:models/item/six_barrels_shotgun.obj",
+  "automatic_culling": false,
+  "flip_v": true,
+  "emissive_ambient": false,
+  "overrides": [
+    { "predicate": { "iblis:aiming": 1 }, "model": "iblis:item/six_barrels_shotgun_aiming" }
+  ]
+}

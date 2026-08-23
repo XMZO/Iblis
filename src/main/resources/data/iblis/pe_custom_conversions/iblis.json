@@ -1,0 +1,37 @@
+{
+  "comment": "Recipe-safe ProjectE values. Steel is based on five iron ingots and four charcoal, rounded down for exact nugget conversion.",
+  "values": {
+    "before": {
+      "iblis:iron_coal": "FREE",
+      "iblis:ironore_coal": "FREE",
+      "iblis:slag": "FREE",
+      "iblis:boulder": "FREE",
+
+      "iblis:ingot_steel": 1404,
+      "iblis:nugget_steel": 156,
+      "iblis:ingot_bronze": 160,
+      "iblis:trigger_spring": 1192,
+
+      "iblis:shotgun_bullet": 990,
+      "iblis:shotgun_shot": 1022,
+      "iblis:crossbow_bolt": 33,
+      "iblis:iron_throwing_knife": 32,
+
+      "iblis:six_barrels_shotgun": 11928,
+      "iblis:six_barrels_shotgun_reloading": 11928,
+      "iblis:double_crossbow": 1496,
+      "iblis:double_crossbow_reloading": 1496,
+      "iblis:heavy_shield": 408,
+
+      "iblis:steel_helmet": 7020,
+      "iblis:steel_chestplate": 11232,
+      "iblis:steel_leggins": 9828,
+      "iblis:steel_boots": 5616,
+
+      "iblis:non-sterile_medkit": 357,
+      "iblis:medkit": 357,
+      "iblis:guide": 256,
+      "iblis:raisin": 128
+    }
+  }
+}

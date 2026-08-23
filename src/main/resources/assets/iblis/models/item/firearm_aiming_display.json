@@ -1,0 +1,7 @@
+{
+  "parent": "iblis:item/firearm_display",
+  "display": {
+    "firstperson_righthand": { "translation": [7.17, 10.4, -48], "scale": [2, 2, 2] },
+    "firstperson_lefthand": { "translation": [-7.17, 10.4, -48], "scale": [2, 2, 2] }
+  }
+}

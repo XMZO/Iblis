@@ -1,0 +1,20 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "iblis:item/adventurer_diary"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "iblis:item/guide_closed"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "iblis:item/guide_opened"
+    }
+  ]
+}
