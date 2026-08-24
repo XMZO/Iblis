@@ -1,7 +1,10 @@
 package iblis;
 
 import com.mojang.logging.LogUtils;
+import iblis.config.BlockInteractionConfig;
 import iblis.config.IblisConfig;
+import iblis.config.IblisConfigPaths;
+import iblis.compat.CompatBootstrap;
 import iblis.registry.IblisAttributes;
 import iblis.registry.IblisBlocks;
 import iblis.registry.IblisCreativeTabs;
@@ -28,6 +31,8 @@ public final class IblisMod {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public IblisMod(FMLJavaModLoadingContext context) {
+        IblisConfigPaths.prepare();
+        BlockInteractionConfig.prepareFiles();
         IEventBus modBus = context.getModEventBus();
         IblisAttributes.register(modBus);
         IblisBlocks.register(modBus);
@@ -38,13 +43,14 @@ public final class IblisMod {
         IblisSounds.register(modBus);
         IblisCreativeTabs.register(modBus);
         IblisLootModifiers.register(modBus);
+        CompatBootstrap.register(modBus);
         modBus.addListener(IblisAttributes::addPlayerAttributes);
         modBus.addListener(IblisEntities::createAttributes);
         modBus.addListener(IblisConfig::onConfigChanged);
         modBus.addListener(IblisNetwork::onCommonSetup);
         modBus.addListener(IblisMod::onCommonSetup);
 
-        context.registerConfig(ModConfig.Type.COMMON, IblisConfig.SPEC, "iblis-common.toml");
+        context.registerConfig(ModConfig.Type.COMMON, IblisConfig.SPEC, IblisConfigPaths.COMMON);
     }
 
     private static void onCommonSetup(FMLCommonSetupEvent event) {

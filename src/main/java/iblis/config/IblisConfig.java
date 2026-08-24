@@ -3,17 +3,19 @@ package iblis.config;
 import iblis.network.IblisNetwork;
 import iblis.player.PlayerCharacteristic;
 import iblis.player.PlayerSkill;
-import java.util.EnumMap;
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 public final class IblisConfig {
-    private static final int GAMEPLAY_SYNC_VERSION = 2;
+    private static final int GAMEPLAY_SYNC_VERSION = 3;
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
     private static final Map<PlayerSkill, ForgeConfigSpec.BooleanValue> SKILL_ENABLED =
             new EnumMap<>(PlayerSkill.class);
@@ -29,6 +31,8 @@ public final class IblisConfig {
             new EnumMap<>(PlayerCharacteristic.class);
     private static final Map<PlayerCharacteristic, ForgeConfigSpec.DoubleValue> CHARACTERISTIC_CAP =
             new EnumMap<>(PlayerCharacteristic.class);
+    private static final Map<Legacy112Feature, ForgeConfigSpec.BooleanValue> LEGACY_112_ENABLED =
+            new EnumMap<>(Legacy112Feature.class);
 
     private static final ForgeConfigSpec.DoubleValue SKILL_TRAINING_BASE_RESISTANCE;
     private static final ForgeConfigSpec.DoubleValue SKILL_TRAINING_LINEAR_RESISTANCE;
@@ -48,15 +52,14 @@ public final class IblisConfig {
     private static final ForgeConfigSpec.BooleanValue MEDKIT_INSTANT_HEALING;
     private static final ForgeConfigSpec.BooleanValue TOGGLE_SPRINT;
     private static final ForgeConfigSpec.BooleanValue RENDER_HP_BAR;
+    private static final ForgeConfigSpec.BooleanValue SHOW_CHARACTERISTICS_INVENTORY_BUTTON;
+    private static final ForgeConfigSpec.BooleanValue SHOW_SKILLS_INVENTORY_BUTTON;
     private static final ForgeConfigSpec.BooleanValue DISABLE_MEDKIT_RECIPE;
     private static final ForgeConfigSpec.BooleanValue DISABLE_SHOTGUN_RECIPE;
     private static final ForgeConfigSpec.IntValue SHOTGUN_FIRE_COOLDOWN_TICKS;
     private static final ForgeConfigSpec.IntValue CROSSBOW_FIRE_COOLDOWN_TICKS;
     private static final ForgeConfigSpec.BooleanValue SHOTGUN_HITS_ENDERMEN;
     private static final ForgeConfigSpec.BooleanValue SHOTGUN_DISABLES_SHIELDS;
-
-    private static final int LEGACY_SHOTGUN_FIRE_COOLDOWN_TICKS = 20;
-    private static final int LEGACY_CROSSBOW_FIRE_COOLDOWN_TICKS = 16;
 
     public static final ForgeConfigSpec SPEC;
 
@@ -67,6 +70,8 @@ public final class IblisConfig {
     public static volatile boolean medkitInstantHealing;
     public static volatile boolean toggleSprint;
     public static volatile boolean renderHpBar;
+    public static volatile boolean showCharacteristicsInventoryButton = true;
+    public static volatile boolean showSkillsInventoryButton = true;
     public static volatile boolean disableMedkitRecipe;
     public static volatile boolean disableShotgunRecipe;
     public static volatile int shotgunFireCooldownTicks = 14;
@@ -83,11 +88,13 @@ public final class IblisConfig {
     public static volatile double characteristicCostMidMultiplier = 0.25;
     public static volatile int characteristicCostLateStartLevel = 15;
     public static volatile double characteristicCostLateMultiplier = 0.35;
+    private static volatile Set<Legacy112Feature> legacy112Features = Set.of();
     private static volatile boolean remoteServerAuthority;
 
     static {
         defineSkills();
         defineCharacteristics();
+        defineLegacy112Features();
 
         BUILDER.push("progression_balance");
         SKILL_TRAINING_BASE_RESISTANCE = BUILDER
@@ -152,6 +159,11 @@ public final class IblisConfig {
                 "Client only: press the sprint key once to toggle sprinting.");
         RENDER_HP_BAR = bool("render_hp_bar", false,
                 "Client only: replace vanilla hearts with the Iblis health bar.");
+        SHOW_CHARACTERISTICS_INVENTORY_BUTTON = bool(
+                "show_characteristics_inventory_button", true,
+                "Client only: show the Characteristics button in the inventory.");
+        SHOW_SKILLS_INVENTORY_BUTTON = bool("show_skills_inventory_button", true,
+                "Client only: show the Skills button in the inventory.");
         DISABLE_MEDKIT_RECIPE = bool("disable_medkit_recipe", false,
                 "Remove the medkit crafting recipe.");
         DISABLE_SHOTGUN_RECIPE = bool("disable_shotgun_recipe", false,
@@ -227,6 +239,18 @@ public final class IblisConfig {
         BUILDER.pop();
     }
 
+    private static void defineLegacy112Features() {
+        BUILDER.comment(
+                "Independent 1.12.2 behavior overrides. All are off by default.",
+                "Enabled options replace only the named modern behavior; fixed bugs stay fixed.")
+                .push("legacy_1_12_2");
+        for (Legacy112Feature feature : Legacy112Feature.values()) {
+            LEGACY_112_ENABLED.put(feature,
+                    bool(feature.key(), false, feature.comment()));
+        }
+        BUILDER.pop();
+    }
+
     private static ForgeConfigSpec.BooleanValue bool(String key, boolean defaultValue, String comment) {
         return BUILDER.comment(comment).define(key, defaultValue);
     }
@@ -241,9 +265,11 @@ public final class IblisConfig {
     }
 
     public static synchronized void bake() {
-        // These two settings are intentionally controlled by each client.
+        // These settings are intentionally controlled by each client.
         toggleSprint = TOGGLE_SPRINT.get();
         renderHpBar = RENDER_HP_BAR.get();
+        showCharacteristicsInventoryButton = SHOW_CHARACTERISTICS_INVENTORY_BUTTON.get();
+        showSkillsInventoryButton = SHOW_SKILLS_INVENTORY_BUTTON.get();
 
         // A connected remote server owns every gameplay setting below.  Config
         // reloads and the local config GUI must not overwrite its snapshot.
@@ -265,6 +291,14 @@ public final class IblisConfig {
             characteristic.pointsPerLevel = CHARACTERISTIC_POINTS.get(characteristic).get();
             characteristic.cap = CHARACTERISTIC_CAP.get(characteristic).get();
         }
+        EnumSet<Legacy112Feature> enabledLegacyFeatures =
+                EnumSet.noneOf(Legacy112Feature.class);
+        for (Legacy112Feature feature : Legacy112Feature.values()) {
+            if (LEGACY_112_ENABLED.get(feature).get()) {
+                enabledLegacyFeatures.add(feature);
+            }
+        }
+        legacy112Features = Set.copyOf(enabledLegacyFeatures);
 
         skillTrainingBaseResistance = SKILL_TRAINING_BASE_RESISTANCE.get();
         skillTrainingLinearResistance = SKILL_TRAINING_LINEAR_RESISTANCE.get();
@@ -288,6 +322,10 @@ public final class IblisConfig {
         medkitInstantHealing = MEDKIT_INSTANT_HEALING.get();
         disableMedkitRecipe = DISABLE_MEDKIT_RECIPE.get();
         disableShotgunRecipe = DISABLE_SHOTGUN_RECIPE.get();
+    }
+
+    public static boolean useLegacy112(Legacy112Feature feature) {
+        return legacy112Features.contains(feature);
     }
 
     public static void save() {
@@ -354,6 +392,12 @@ public final class IblisConfig {
         general.putBoolean("disable_medkit_recipe", disableMedkitRecipe);
         general.putBoolean("disable_shotgun_recipe", disableShotgunRecipe);
         root.put("general", general);
+
+        CompoundTag legacy112 = new CompoundTag();
+        for (Legacy112Feature feature : Legacy112Feature.values()) {
+            legacy112.putBoolean(feature.key(), useLegacy112(feature));
+        }
+        root.put("legacy_1_12_2", legacy112);
         return root;
     }
 
@@ -368,6 +412,8 @@ public final class IblisConfig {
                 || !root.contains("skills", Tag.TAG_COMPOUND)
                 || !root.contains("characteristics", Tag.TAG_COMPOUND)
                 || !root.contains("progression", Tag.TAG_COMPOUND)
+                || !root.contains("firearms", Tag.TAG_COMPOUND)
+                || !root.contains("legacy_1_12_2", Tag.TAG_COMPOUND)
                 || !root.contains("general", Tag.TAG_COMPOUND)) {
             return false;
         }
@@ -448,32 +494,27 @@ public final class IblisConfig {
         double newCharacteristicCostLateMultiplier =
                 progression.getDouble("characteristic_cost_late_multiplier");
 
-        int newShotgunFireCooldownTicks = LEGACY_SHOTGUN_FIRE_COOLDOWN_TICKS;
-        int newCrossbowFireCooldownTicks = LEGACY_CROSSBOW_FIRE_COOLDOWN_TICKS;
-        boolean newShotgunHitsEndermen = true;
-        boolean newShotgunDisablesShields = true;
-        if (root.contains("firearms")) {
-            if (!root.contains("firearms", Tag.TAG_COMPOUND)) {
+        CompoundTag firearms = root.getCompound("firearms");
+        if (!validInteger(firearms, "shotgun_fire_cooldown_ticks", 0, 1200)
+                || !validInteger(firearms, "crossbow_fire_cooldown_ticks", 0, 1200)
+                || !validBoolean(firearms, "shotgun_hits_endermen")
+                || !validBoolean(firearms, "shotgun_disables_shields")) {
+            return false;
+        }
+        int newShotgunFireCooldownTicks = firearms.getInt("shotgun_fire_cooldown_ticks");
+        int newCrossbowFireCooldownTicks = firearms.getInt("crossbow_fire_cooldown_ticks");
+        boolean newShotgunHitsEndermen = firearms.getBoolean("shotgun_hits_endermen");
+        boolean newShotgunDisablesShields = firearms.getBoolean("shotgun_disables_shields");
+
+        CompoundTag legacy112 = root.getCompound("legacy_1_12_2");
+        EnumSet<Legacy112Feature> newLegacy112Features =
+                EnumSet.noneOf(Legacy112Feature.class);
+        for (Legacy112Feature feature : Legacy112Feature.values()) {
+            if (!validBoolean(legacy112, feature.key())) {
                 return false;
             }
-            CompoundTag firearms = root.getCompound("firearms");
-            if (!validInteger(firearms, "shotgun_fire_cooldown_ticks", 0, 1200)
-                    || !validInteger(firearms, "crossbow_fire_cooldown_ticks", 0, 1200)) {
-                return false;
-            }
-            newShotgunFireCooldownTicks = firearms.getInt("shotgun_fire_cooldown_ticks");
-            newCrossbowFireCooldownTicks = firearms.getInt("crossbow_fire_cooldown_ticks");
-            if (firearms.contains("shotgun_hits_endermen")) {
-                if (!validBoolean(firearms, "shotgun_hits_endermen")) {
-                    return false;
-                }
-                newShotgunHitsEndermen = firearms.getBoolean("shotgun_hits_endermen");
-            }
-            if (firearms.contains("shotgun_disables_shields")) {
-                if (!validBoolean(firearms, "shotgun_disables_shields")) {
-                    return false;
-                }
-                newShotgunDisablesShields = firearms.getBoolean("shotgun_disables_shields");
+            if (legacy112.getBoolean(feature.key())) {
+                newLegacy112Features.add(feature);
             }
         }
 
@@ -513,6 +554,7 @@ public final class IblisConfig {
         characteristicCostMidMultiplier = newCharacteristicCostMidMultiplier;
         characteristicCostLateStartLevel = newCharacteristicCostLateStartLevel;
         characteristicCostLateMultiplier = newCharacteristicCostLateMultiplier;
+        legacy112Features = Set.copyOf(newLegacy112Features);
         shotgunFireCooldownTicks = newShotgunFireCooldownTicks;
         crossbowFireCooldownTicks = newCrossbowFireCooldownTicks;
         shotgunHitsEndermen = newShotgunHitsEndermen;
@@ -572,8 +614,14 @@ public final class IblisConfig {
                         EditableConfigValue.booleanValue("medkit_instant_healing", MEDKIT_INSTANT_HEALING),
                         EditableConfigValue.booleanValue("toggle_sprint_by_sprint_button", TOGGLE_SPRINT),
                         EditableConfigValue.booleanValue("render_hp_bar", RENDER_HP_BAR),
+                        EditableConfigValue.booleanValue("show_characteristics_inventory_button",
+                                SHOW_CHARACTERISTICS_INVENTORY_BUTTON),
+                        EditableConfigValue.booleanValue("show_skills_inventory_button",
+                                SHOW_SKILLS_INVENTORY_BUTTON),
                         EditableConfigValue.booleanValue("disable_medkit_recipe", DISABLE_MEDKIT_RECIPE),
                         EditableConfigValue.booleanValue("disable_shotgun_recipe", DISABLE_SHOTGUN_RECIPE))),
+                new EditableConfigCategory(
+                        "iblis.legacy112Config", SPEC, legacy112EditableValues()),
                 new EditableConfigCategory("iblis.firearmBalanceConfig", SPEC, List.of(
                         EditableConfigValue.numberValue("shotgun_fire_cooldown_ticks",
                                 SHOTGUN_FIRE_COOLDOWN_TICKS, 0.0, 1200.0),
@@ -613,12 +661,26 @@ public final class IblisConfig {
                 enumNumberCategory("iblis.skillsXPConfig", SKILL_XP, 0.0, 1000.0));
     }
 
+    private static List<EditableConfigValue> legacy112EditableValues() {
+        List<EditableConfigValue> editable =
+                new ArrayList<>(Legacy112Feature.values().length);
+        for (Legacy112Feature feature : Legacy112Feature.values()) {
+            editable.add(EditableConfigValue.booleanValue(
+                    feature.key(), LEGACY_112_ENABLED.get(feature)));
+        }
+        return List.copyOf(editable);
+    }
+
     /** Client preferences remain editable while connected to a remote server. */
     public static List<EditableConfigCategory> clientEditableCategories() {
         return List.of(new EditableConfigCategory("iblis.generalConfig", SPEC, List.of(
                 EditableConfigValue.booleanValue(
                         "toggle_sprint_by_sprint_button", TOGGLE_SPRINT),
-                EditableConfigValue.booleanValue("render_hp_bar", RENDER_HP_BAR))));
+                EditableConfigValue.booleanValue("render_hp_bar", RENDER_HP_BAR),
+                EditableConfigValue.booleanValue("show_characteristics_inventory_button",
+                        SHOW_CHARACTERISTICS_INVENTORY_BUTTON),
+                EditableConfigValue.booleanValue("show_skills_inventory_button",
+                        SHOW_SKILLS_INVENTORY_BUTTON))));
     }
 
     private static <E extends Enum<E>> EditableConfigCategory enumBooleanCategory(

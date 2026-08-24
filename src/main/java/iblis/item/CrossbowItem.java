@@ -1,10 +1,12 @@
 package iblis.item;
 
 import iblis.config.IblisConfig;
+import iblis.config.Legacy112Feature;
 import iblis.entity.CrossbowBoltEntity;
 import iblis.registry.IblisAttributes;
 import iblis.registry.IblisItems;
 import iblis.registry.IblisSounds;
+import iblis.util.FirearmDamageRules;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -25,7 +27,7 @@ public final class CrossbowItem extends FirearmItem {
         float yaw = player.getYRot();
         Vec3 position = player.getEyePosition();
         if (!player.isUsingItem()) {
-            Vec3 offset = vectorForRotation(pitch + 4.0F, yaw + 4.0F);
+            Vec3 offset = Vec3.directionFromRotation(pitch + 4.0F, yaw + 4.0F);
             position = position.add(offset);
             pitch--;
             yaw--;
@@ -35,7 +37,10 @@ public final class CrossbowItem extends FirearmItem {
         float speed = 8.0F + (float) player.getDeltaMovement().length();
         bolt.shootFromRotation(player, pitch, yaw, 0.0F, speed, (float) (10.0 / accuracy));
         double damage = player.getAttributeValue(IblisAttributes.PROJECTILE_DAMAGE.get()) * ammoDamage;
-        bolt.setBaseDamage(critical ? damage * LUCKY_SHOT_DAMAGE_MULTIPLIER : damage);
+        boolean legacyLuckyShot = critical && IblisConfig.useLegacy112(
+                Legacy112Feature.FIREARM_LUCKY_SHOT_DAMAGE);
+        bolt.setBaseDamage(critical ? damage * FirearmDamageRules.luckyShotMultiplier() : damage);
+        bolt.setLegacyLuckyShot(legacyLuckyShot);
         level.addFreshEntity(bolt);
         player.resetAttackStrengthTicker();
         playDropStringSound(player);
@@ -43,17 +48,8 @@ public final class CrossbowItem extends FirearmItem {
 
     @Override
     protected int baseFireCooldownTicks() {
-        return IblisConfig.crossbowFireCooldownTicks;
-    }
-
-    private static Vec3 vectorForRotation(float pitch, float yaw) {
-        float cosYaw = net.minecraft.util.Mth.cos(-yaw * net.minecraft.util.Mth.DEG_TO_RAD
-                - net.minecraft.util.Mth.PI);
-        float sinYaw = net.minecraft.util.Mth.sin(-yaw * net.minecraft.util.Mth.DEG_TO_RAD
-                - net.minecraft.util.Mth.PI);
-        float horizontal = -net.minecraft.util.Mth.cos(-pitch * net.minecraft.util.Mth.DEG_TO_RAD);
-        float vertical = net.minecraft.util.Mth.sin(-pitch * net.minecraft.util.Mth.DEG_TO_RAD);
-        return new Vec3(sinYaw * horizontal, vertical, cosYaw * horizontal);
+        return IblisConfig.useLegacy112(Legacy112Feature.CROSSBOW_FIRE_COOLDOWN)
+                ? 0 : IblisConfig.crossbowFireCooldownTicks;
     }
 
     @Override

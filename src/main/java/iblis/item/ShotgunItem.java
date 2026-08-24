@@ -1,13 +1,16 @@
 package iblis.item;
 
 import iblis.IblisMod;
-import iblis.damage.IblisDamageTypes;
+import iblis.config.BlockInteractionConfig;
 import iblis.config.IblisConfig;
+import iblis.config.Legacy112Feature;
+import iblis.damage.IblisDamageTypes;
 import iblis.event.IblisGameplayEvents;
 import iblis.event.ShotgunVibrationEvents;
 import iblis.registry.IblisItems;
 import iblis.registry.IblisSounds;
 import iblis.util.BloodColors;
+import iblis.util.FirearmDamageRules;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -24,7 +27,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -37,10 +39,6 @@ import net.minecraftforge.event.level.BlockEvent;
 
 public final class ShotgunItem extends FirearmItem {
     private static final int MAX_BLOCK_PENETRATIONS = 32;
-    private static final TagKey<Block> SHOTGUN_BREAKABLE = BlockTags.create(
-            ResourceLocation.fromNamespaceAndPath(IblisMod.MOD_ID, "shotgun_breakable"));
-    private static final TagKey<Block> SHOTGUN_PENETRABLE = BlockTags.create(
-            ResourceLocation.fromNamespaceAndPath(IblisMod.MOD_ID, "shotgun_penetrable"));
     private static final TagKey<Block> SHOTGUN_BREAKABLE_VEGETATION = BlockTags.create(
             ResourceLocation.fromNamespaceAndPath(
                     IblisMod.MOD_ID, "shotgun_breakable_vegetation"));
@@ -53,6 +51,12 @@ public final class ShotgunItem extends FirearmItem {
     private static final TagKey<Block> SHOTGUN_PENETRABLE_DOORS = BlockTags.create(
             ResourceLocation.fromNamespaceAndPath(
                     IblisMod.MOD_ID, "shotgun_penetrable_doors"));
+    private static final TagKey<Block> LEGACY_GLASS = BlockTags.create(
+            ResourceLocation.fromNamespaceAndPath("forge", "glass"));
+    private static final TagKey<Block> LEGACY_GLASS_PANES = BlockTags.create(
+            ResourceLocation.fromNamespaceAndPath("forge", "glass_panes"));
+    private static final TagKey<Block> LEGACY_ICE = BlockTags.create(
+            ResourceLocation.fromNamespaceAndPath("minecraft", "ice"));
 
     public ShotgunItem(Properties properties) {
         super(properties);
@@ -86,12 +90,14 @@ public final class ShotgunItem extends FirearmItem {
             float damage = (float) player.getAttributeValue(iblis.registry.IblisAttributes.PROJECTILE_DAMAGE.get())
                     * ammoDamage;
             if (critical) {
-                damage *= (float) LUCKY_SHOT_DAMAGE_MULTIPLIER;
+                damage *= FirearmDamageRules.luckyShotMultiplier();
             }
             float splashCone = ammoType == 0 ? 0.0F : 0.02F;
             LivingEntity lastHit = damageEntitiesOnPath(level,
                     IblisDamageTypes.shotgun(level, player), player, start, end, damage, splashCone,
-                    trace.doorDistances, trace.doorCount);
+                    trace.doorDistances, trace.doorCount,
+                    critical && IblisConfig.useLegacy112(
+                            Legacy112Feature.FIREARM_LUCKY_SHOT_DAMAGE));
             if (addDecal) {
                 Vec3 bloodPosition = null;
                 net.minecraft.core.Direction bloodFace = null;
@@ -118,7 +124,8 @@ public final class ShotgunItem extends FirearmItem {
             }
         }
         Vec3 hand = player.isUsingItem() ? Vec3.ZERO
-                : vectorForRotation(player.getXRot() - 15.0F, player.getYRot() + 9.0F);
+                : Vec3.directionFromRotation(
+                player.getXRot() - 15.0F, player.getYRot() + 9.0F);
         level.sendParticles(ParticleTypes.SMOKE,
                 player.getX() + hand.x, player.getY() + player.getEyeHeight() + hand.y,
                 player.getZ() + hand.z, 1, 0.0, 0.1, 0.0, 0.0);
@@ -128,7 +135,8 @@ public final class ShotgunItem extends FirearmItem {
 
     @Override
     protected int baseFireCooldownTicks() {
-        return IblisConfig.shotgunFireCooldownTicks;
+        return IblisConfig.useLegacy112(Legacy112Feature.SHOTGUN_FIRE_COOLDOWN)
+                ? 0 : IblisConfig.shotgunFireCooldownTicks;
     }
 
     private static ShotTrace traceBlocks(
@@ -148,6 +156,11 @@ public final class ShotgunItem extends FirearmItem {
                             start, end, pos, shape, state);
                     if (hit == null) {
                         return null;
+                    }
+                    if (IblisConfig.useLegacy112(
+                            Legacy112Feature.SHOTGUN_BLOCK_INTERACTIONS)) {
+                        return traceLegacyBlock(
+                                level, player, trace, pos.immutable(), state, hit);
                     }
                     if (!isShotgunPenetrable(level, pos, state)
                             || ++trace.penetratedBlocks > MAX_BLOCK_PENETRATIONS) {
@@ -178,22 +191,48 @@ public final class ShotgunItem extends FirearmItem {
     }
 
     private static boolean isPotentialPenetration(BlockState state) {
-        return state.is(SHOTGUN_BREAKABLE)
-                || state.is(SHOTGUN_PENETRABLE)
-                || state.is(SHOTGUN_PENETRABLE_DOORS)
-                || state.getSoundType() == SoundType.GLASS;
+        if (IblisConfig.useLegacy112(Legacy112Feature.SHOTGUN_BLOCK_INTERACTIONS)) {
+            return state.is(BlockTags.LEAVES) || isLegacyFragile(state);
+        }
+        return BlockInteractionConfig.shotgunBreakable(state)
+                || BlockInteractionConfig.shotgunPenetrable(state);
+    }
+
+    private static BlockHitResult traceLegacyBlock(
+            ServerLevel level, ServerPlayer player, ShotTrace trace, BlockPos pos,
+            BlockState state, BlockHitResult hit) {
+        if (state.hasBlockEntity() || state.is(BlockTags.PORTALS)
+                || state.is(BlockTags.DRAGON_IMMUNE)
+                || state.is(BlockTags.WITHER_IMMUNE)) {
+            return hit;
+        }
+        if (state.is(BlockTags.LEAVES)) {
+            return ++trace.penetratedBlocks <= MAX_BLOCK_PENETRATIONS ? null : hit;
+        }
+        if (isLegacyFragile(state) && !trace.barrierBreakAttempted) {
+            float destroySpeed = state.getDestroySpeed(level, pos);
+            if (destroySpeed >= 0.0F && destroySpeed < 0.6F) {
+                trace.barrierBreakAttempted = true;
+                breakShotgunBlock(level, pos, state, player);
+            }
+        }
+        return hit;
+    }
+
+    private static boolean isLegacyFragile(BlockState state) {
+        return state.is(LEGACY_GLASS) || state.is(LEGACY_GLASS_PANES)
+                || state.is(LEGACY_ICE);
     }
 
     private static boolean isShotgunPenetrable(
             ServerLevel level, BlockPos pos, BlockState state) {
-        boolean explicitlyPenetrable = state.is(SHOTGUN_PENETRABLE);
+        boolean explicitlyPenetrable = BlockInteractionConfig.shotgunPenetrable(state);
         if (state.hasBlockEntity() || state.is(BlockTags.PORTALS)
                 || !explicitlyPenetrable && (state.is(BlockTags.DRAGON_IMMUNE)
                 || state.is(BlockTags.WITHER_IMMUNE))) {
             return false;
         }
         return explicitlyPenetrable
-                || state.is(SHOTGUN_PENETRABLE_DOORS)
                 || isShotgunBreakable(level, pos, state);
     }
 
@@ -216,13 +255,14 @@ public final class ShotgunItem extends FirearmItem {
                 || state.is(BlockTags.WITHER_IMMUNE)) {
             return false;
         }
+        if (!BlockInteractionConfig.shotgunBreakable(state)) {
+            return false;
+        }
         if (state.is(SHOTGUN_BREAKABLE_WOODEN_BARRIERS)
                 || state.is(SHOTGUN_BREAKABLE_FRAGILE_BLOCKS)) {
             return true;
         }
-        return destroySpeed < 0.6F
-                && (state.is(SHOTGUN_BREAKABLE)
-                || state.getSoundType() == SoundType.GLASS);
+        return destroySpeed < 0.6F;
     }
 
     private static final class ShotTrace {
@@ -247,16 +287,6 @@ public final class ShotgunItem extends FirearmItem {
             doorKeys[doorCount] = key;
             doorDistances[doorCount++] = distance;
         }
-    }
-
-    private static Vec3 vectorForRotation(float pitch, float yaw) {
-        float cosYaw = net.minecraft.util.Mth.cos(-yaw * net.minecraft.util.Mth.DEG_TO_RAD
-                - net.minecraft.util.Mth.PI);
-        float sinYaw = net.minecraft.util.Mth.sin(-yaw * net.minecraft.util.Mth.DEG_TO_RAD
-                - net.minecraft.util.Mth.PI);
-        float horizontal = -net.minecraft.util.Mth.cos(-pitch * net.minecraft.util.Mth.DEG_TO_RAD);
-        float vertical = net.minecraft.util.Mth.sin(-pitch * net.minecraft.util.Mth.DEG_TO_RAD);
-        return new Vec3(sinYaw * horizontal, vertical, cosYaw * horizontal);
     }
 
     @Override

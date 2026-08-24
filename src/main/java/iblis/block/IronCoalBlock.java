@@ -16,7 +16,8 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 
 @SuppressWarnings("deprecation")
 public final class IronCoalBlock extends Block {
-    public static final IntegerProperty AGE = IntegerProperty.create("age", 0, 15);
+    public static final int MAX_AGE = 15;
+    public static final IntegerProperty AGE = IntegerProperty.create("age", 0, MAX_AGE);
     private static final int BASE_TICK_DELAY = 30;
 
     public IronCoalBlock(Properties properties) {
@@ -40,8 +41,8 @@ public final class IronCoalBlock extends Block {
         }
 
         int age = state.getValue(AGE);
-        if (age < 15) {
-            int nextAge = Math.min(15, age + random.nextInt(3) / 2);
+        if (age < MAX_AGE) {
+            int nextAge = Math.min(MAX_AGE, age + random.nextInt(3) / 2);
             level.setBlock(pos, state.setValue(AGE, nextAge), 11);
             level.scheduleTick(pos, this, BASE_TICK_DELAY + random.nextInt(10));
             igniteNeighbors(level, pos, random);
@@ -57,7 +58,7 @@ public final class IronCoalBlock extends Block {
         }
     }
 
-    private static boolean isIgnited(LevelReader level, BlockPos pos) {
+    public static boolean isIgnited(LevelReader level, BlockPos pos) {
         for (Direction direction : Direction.values()) {
             if (level.getBlockState(pos.relative(direction)).is(BlockTags.FIRE)) {
                 return true;

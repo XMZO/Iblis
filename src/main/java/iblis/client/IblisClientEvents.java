@@ -2,12 +2,14 @@ package iblis.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import iblis.IblisMod;
+import iblis.compat.CompatHooks;
 import iblis.item.CustomLeftClickItem;
 import iblis.item.FirearmItem;
 import iblis.item.GuideBookItem;
 import iblis.crafting.CraftingQuality;
 import iblis.client.gui.ModConfigScreens;
 import iblis.client.gui.FirearmCooldownDecorator;
+import iblis.client.gui.IblisScreenEvents;
 import iblis.client.particle.BoulderShardParticle;
 import iblis.client.particle.SliverParticle;
 import iblis.client.particle.SparkParticle;
@@ -53,6 +55,12 @@ public final class IblisClientEvents {
     private static final KeyMapping RELOAD_KEY = new KeyMapping(
             "key.iblis.reload", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R,
             "key.categories.gameplay");
+    private static final KeyMapping OPEN_CHARACTERISTICS_KEY = new KeyMapping(
+            "key.iblis.open_characteristics", InputConstants.Type.KEYSYM,
+            InputConstants.UNKNOWN.getValue(), "key.categories.gameplay");
+    private static final KeyMapping OPEN_SKILLS_KEY = new KeyMapping(
+            "key.iblis.open_skills", InputConstants.Type.KEYSYM,
+            InputConstants.UNKNOWN.getValue(), "key.categories.gameplay");
     private static boolean sprintKeyWasDown;
     private static boolean sprintToggled;
     private static int sprintCounter;
@@ -110,6 +118,8 @@ public final class IblisClientEvents {
         @SubscribeEvent
         public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
             event.register(RELOAD_KEY);
+            event.register(OPEN_CHARACTERISTICS_KEY);
+            event.register(OPEN_SKILLS_KEY);
         }
 
         @SubscribeEvent
@@ -251,6 +261,15 @@ public final class IblisClientEvents {
             if (minecraft.screen != null) {
                 return;
             }
+            boolean openCharacteristics = OPEN_CHARACTERISTICS_KEY.consumeClick();
+            boolean openSkills = OPEN_SKILLS_KEY.consumeClick();
+            if (openCharacteristics
+                    && IblisScreenEvents.openCharacteristicsScreen(null)) {
+                return;
+            }
+            if (openSkills && IblisScreenEvents.openSkillsScreen(null)) {
+                return;
+            }
             while (RELOAD_KEY.consumeClick()) {
                 IblisNetwork.sendPlayerAction(PlayerActionPacket.Action.RELOAD,
                         InteractionHand.MAIN_HAND);
@@ -362,8 +381,13 @@ public final class IblisClientEvents {
             }
             if (using.getItem() instanceof net.minecraft.world.item.BowItem) {
                 compensateMovement(event, PlayerSkill.ARCHERY.getFullValue(player));
-            } else if (player.isBlocking()) {
-                compensateMovement(event, PlayerSkill.PARRY.getFullValue(player));
+            } else {
+                CompatHooks.UseItemProfile profile = CompatHooks.useItemProfile(using);
+                if (profile != null) {
+                    compensateMovement(event, profile.skill().getFullValue(player));
+                } else if (player.isBlocking()) {
+                    compensateMovement(event, PlayerSkill.PARRY.getFullValue(player));
+                }
             }
         }
 

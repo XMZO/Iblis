@@ -16,9 +16,9 @@ import org.joml.Quaternionf;
 
 /** Preserves the small, motion-axis spin used by the 1.12.2 boulder renderer. */
 public final class BoulderRenderer extends EntityRenderer<BoulderEntity> {
+    private static final float SPIN_DEGREES_PER_TICK = 3.0F;
     private final ItemRenderer itemRenderer;
     private final ItemStack boulder = new ItemStack(IblisItems.BOULDER.get());
-    private int frame;
 
     public BoulderRenderer(EntityRendererProvider.Context context) {
         super(context);
@@ -36,12 +36,11 @@ public final class BoulderRenderer extends EntityRenderer<BoulderEntity> {
         double length = movement.length();
         if (length > 1.0E-7) {
             poseStack.mulPose(new Quaternionf().rotationAxis(
-                    (float) Math.toRadians(++frame),
+                    (float) Math.toRadians(
+                            (entity.tickCount + partialTick) * SPIN_DEGREES_PER_TICK),
                     (float) (movement.x / length),
                     (float) (movement.y / length),
                     (float) (movement.z / length)));
-        } else {
-            frame++;
         }
         itemRenderer.renderStatic(boulder, ItemDisplayContext.GROUND, packedLight,
                 net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,

@@ -22,6 +22,9 @@ public final class HeadshotParticle extends Particle {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
             "iblis_headshots", "textures/particle/particles.png");
 
+    private final Vector3f[] corners = {
+            new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f()
+    };
     private final float size;
     private final int particleType;
 
@@ -42,18 +45,13 @@ public final class HeadshotParticle extends Particle {
         float renderX = (float) (Mth.lerp(partialTick, xo, x) - cameraPosition.x);
         float renderY = (float) (Mth.lerp(partialTick, yo, y) - cameraPosition.y);
         float renderZ = (float) (Mth.lerp(partialTick, zo, z) - cameraPosition.z);
-        Quaternionf rotation = new Quaternionf(camera.rotation());
+        Quaternionf rotation = camera.rotation();
         float scale = 2.0F * size;
 
-        Vector3f[] corners = {
-                new Vector3f(-1.0F, -1.0F, 0.0F),
-                new Vector3f(-1.0F, 1.0F, 0.0F),
-                new Vector3f(1.0F, 1.0F, 0.0F),
-                new Vector3f(1.0F, -1.0F, 0.0F)
-        };
-        for (Vector3f corner : corners) {
-            corner.rotate(rotation).mul(scale).add(renderX, renderY, renderZ);
-        }
+        transform(corners[0], -1.0F, -1.0F, rotation, scale, renderX, renderY, renderZ);
+        transform(corners[1], -1.0F, 1.0F, rotation, scale, renderX, renderY, renderZ);
+        transform(corners[2], 1.0F, 1.0F, rotation, scale, renderX, renderY, renderZ);
+        transform(corners[3], 1.0F, -1.0F, rotation, scale, renderX, renderY, renderZ);
 
         float minU = (particleType - 1) * 16.0F / 256.0F;
         float maxU = minU + 16.0F / 256.0F;
@@ -72,6 +70,11 @@ public final class HeadshotParticle extends Particle {
         vertex(buffer, corners[3], minU, maxV);
         BufferUploader.drawWithShader(buffer.end());
         RenderSystem.disableBlend();
+    }
+
+    private static void transform(Vector3f corner, float x, float y, Quaternionf rotation,
+                                  float scale, float renderX, float renderY, float renderZ) {
+        corner.set(x, y, 0.0F).rotate(rotation).mul(scale).add(renderX, renderY, renderZ);
     }
 
     private void vertex(VertexConsumer buffer, Vector3f position, float u, float v) {

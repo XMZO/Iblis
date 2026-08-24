@@ -46,7 +46,8 @@ public final class ThrowingWeaponItem extends AmmoItem {
                 SoundEvents.SNOWBALL_THROW, SoundSource.NEUTRAL, 0.5F,
                 0.4F / (player.getRandom().nextFloat() * 0.4F + 0.8F));
         if (!level.isClientSide) {
-            Vec3 handOffset = vectorForRotation(player.getXRot() - 15.0F, player.getYRot() + 9.0F);
+            Vec3 handOffset = Vec3.directionFromRotation(
+                    player.getXRot() - 15.0F, player.getYRot() + 9.0F);
             Projectile projectile = kind == Kind.BOULDER
                     ? new BoulderEntity(level, player, player.getX() + handOffset.x,
                     player.getY() + player.getEyeHeight() + handOffset.y, player.getZ() + handOffset.z)
@@ -86,14 +87,6 @@ public final class ThrowingWeaponItem extends AmmoItem {
                 Attributes.ATTACK_SPEED,
                 new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", -1.4000000953674316,
                         AttributeModifier.Operation.ADDITION));
-    }
-
-    private static Vec3 vectorForRotation(float pitch, float yaw) {
-        float cosYaw = Mth.cos(-yaw * Mth.DEG_TO_RAD - Mth.PI);
-        float sinYaw = Mth.sin(-yaw * Mth.DEG_TO_RAD - Mth.PI);
-        float horizontal = -Mth.cos(-pitch * Mth.DEG_TO_RAD);
-        float vertical = Mth.sin(-pitch * Mth.DEG_TO_RAD);
-        return new Vec3(sinYaw * horizontal, vertical, cosYaw * horizontal);
     }
 
     public enum Kind {

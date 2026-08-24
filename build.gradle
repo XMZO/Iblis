@@ -123,6 +123,14 @@ repositories {
         url = "https://maven.blamejared.com"
     }
 
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
+
     // If you have mod jar dependencies in ./libs, you can declare them as a repository like so.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:flat_dir_resolver
     // flatDir {
@@ -142,6 +150,11 @@ dependencies {
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
+    compileOnly fg.deobf("maven.modrinth:jade:${jade_version}")
+    compileOnly fg.deobf("maven.modrinth:mantle:${mantle_version}")
+    compileOnly fg.deobf("maven.modrinth:tinkers-construct:${tconstruct_version}")
+    runtimeOnly fg.deobf("maven.modrinth:mantle:${mantle_version}")
+    runtimeOnly fg.deobf("maven.modrinth:tinkers-construct:${tconstruct_version}")
     // runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
 
     // Example mod dependency using a mod jar from ./libs with a flat dir repository

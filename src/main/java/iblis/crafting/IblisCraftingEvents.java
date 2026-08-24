@@ -1,6 +1,7 @@
 package iblis.crafting;
 
 import iblis.IblisMod;
+import iblis.compat.CompatHooks;
 import iblis.item.AmmoItem;
 import iblis.item.GuideBookItem;
 import iblis.player.PlayerSkill;
@@ -39,6 +40,9 @@ public final class IblisCraftingEvents {
             GuideBookItem.fillDiary(output, player);
             return;
         }
+        if (CompatHooks.handleItemCrafted(event)) {
+            return;
+        }
 
         CraftingProfile profile = profileFor(output);
         if (profile == null) {
@@ -59,6 +63,9 @@ public final class IblisCraftingEvents {
     @SubscribeEvent
     public static void itemRepaired(AnvilRepairEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        if (CompatHooks.ownsCraftingResult(event.getOutput())) {
             return;
         }
         CraftingProfile profile = generalProfile(event.getOutput());

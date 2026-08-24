@@ -1,7 +1,9 @@
 package iblis.client.particle;
 
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexSorting;
 import iblis.IblisMod;
 import iblis.network.packet.ShotImpactPacket;
 import java.util.ArrayDeque;
@@ -9,7 +11,6 @@ import java.util.Deque;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
@@ -28,7 +29,10 @@ import net.minecraftforge.fml.common.Mod;
 public final class DecalManager {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
             IblisMod.MOD_ID, "textures/particle/particles.png");
-    private static final RenderType RENDER_TYPE = RenderType.entityTranslucent(TEXTURE, false);
+    private static final RenderType RENDER_TYPE = DecalRenderType.create(TEXTURE);
+    private static final BufferBuilder BUFFER = new BufferBuilder(RENDER_TYPE.bufferSize());
+    private static final double SURFACE_OFFSET = 1.0 / 256.0;
+    private static final double LAYER_OFFSET = 1.0 / 8192.0;
     private static final int MAX_DECALS = 256;
     private static final long LIFETIME = 1500L;
     private static final Deque<Decal> DECALS = new ArrayDeque<>();
@@ -132,7 +136,7 @@ public final class DecalManager {
                 layer++;
             }
         }
-        DECALS.addLast(new Decal(center, face, blockPos, state, size, colour,
+        DECALS.addLast(new Decal(center, face, blockPos, blockPos.relative(face), state, size, colour,
                 sprite, level.random.nextInt(4), level.getGameTime() + LIFETIME, layer));
         while (DECALS.size() > MAX_DECALS) {
             DECALS.removeFirst();
@@ -160,33 +164,35 @@ public final class DecalManager {
         }
 
         Vec3 camera = event.getCamera().getPosition();
-        PoseStack poses = event.getPoseStack();
-        poses.pushPose();
-        poses.translate(-camera.x, -camera.y, -camera.z);
-        MultiBufferSource.BufferSource buffers = minecraft.renderBuffers().bufferSource();
-        VertexConsumer consumer = buffers.getBuffer(RENDER_TYPE);
+        PoseStack.Pose pose = event.getPoseStack().last();
+        boolean building = false;
         for (Decal decal : DECALS) {
             if (decal.center.distanceToSqr(camera) <= 16384.0) {
-                renderDecal(level, poses, consumer, decal);
+                if (!building) {
+                    BUFFER.begin(RENDER_TYPE.mode(), RENDER_TYPE.format());
+                    building = true;
+                }
+                renderDecal(level, pose, BUFFER, decal, camera);
             }
         }
-        buffers.endBatch(RENDER_TYPE);
-        poses.popPose();
+        if (building) {
+            RENDER_TYPE.end(BUFFER, VertexSorting.DISTANCE_TO_ORIGIN);
+        }
     }
 
-    private static void renderDecal(ClientLevel level, PoseStack poses,
-                                    VertexConsumer consumer, Decal decal) {
+    private static void renderDecal(ClientLevel level, PoseStack.Pose pose,
+                                    VertexConsumer consumer, Decal decal, Vec3 camera) {
         double half = decal.size * 0.5;
-        double offset = 0.001 + decal.layer * 0.0001;
-        double x1 = Math.max(decal.center.x - half, decal.blockPos.getX());
-        double x2 = Math.min(decal.center.x + half, decal.blockPos.getX() + 1.0);
-        double y1 = Math.max(decal.center.y - half, decal.blockPos.getY());
-        double y2 = Math.min(decal.center.y + half, decal.blockPos.getY() + 1.0);
-        double z1 = Math.max(decal.center.z - half, decal.blockPos.getZ());
-        double z2 = Math.min(decal.center.z + half, decal.blockPos.getZ() + 1.0);
-        double x = decal.center.x + decal.face.getStepX() * offset;
-        double y = decal.center.y + decal.face.getStepY() * offset;
-        double z = decal.center.z + decal.face.getStepZ() * offset;
+        double offset = SURFACE_OFFSET + decal.layer * LAYER_OFFSET;
+        double x1 = Math.max(decal.center.x - half, decal.blockPos.getX()) - camera.x;
+        double x2 = Math.min(decal.center.x + half, decal.blockPos.getX() + 1.0) - camera.x;
+        double y1 = Math.max(decal.center.y - half, decal.blockPos.getY()) - camera.y;
+        double y2 = Math.min(decal.center.y + half, decal.blockPos.getY() + 1.0) - camera.y;
+        double z1 = Math.max(decal.center.z - half, decal.blockPos.getZ()) - camera.z;
+        double z2 = Math.min(decal.center.z + half, decal.blockPos.getZ() + 1.0) - camera.z;
+        double x = decal.center.x - camera.x + decal.face.getStepX() * offset;
+        double y = decal.center.y - camera.y + decal.face.getStepY() * offset;
+        double z = decal.center.z - camera.z + decal.face.getStepZ() * offset;
 
         float u1 = decal.spriteX * 32.0F / 256.0F;
         float u2 = u1 + 32.0F / 256.0F;
@@ -195,9 +201,7 @@ public final class DecalManager {
         int red = decal.colour >> 16 & 255;
         int green = decal.colour >> 8 & 255;
         int blue = decal.colour & 255;
-        int light = LevelRenderer.getLightColor(level, decal.blockPos.relative(decal.face));
-        PoseStack.Pose pose = poses.last();
-
+        int light = LevelRenderer.getLightColor(level, decal.lightPos);
         switch (decal.face) {
             case UP, DOWN -> quad(consumer, pose,
                     x1, y, z1, x2, y, z1, x2, y, z2, x1, y, z2,
@@ -243,7 +247,7 @@ public final class DecalManager {
         }
     }
 
-    private record Decal(Vec3 center, Direction face, BlockPos blockPos,
+    private record Decal(Vec3 center, Direction face, BlockPos blockPos, BlockPos lightPos,
                          BlockState state, float size, int colour,
                          int spriteX, int spriteY, long expiresAt, int layer) {
     }

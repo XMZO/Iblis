@@ -1,10 +1,31 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "pattern": [" I ", " P ", " S "],
-  "key": {
-    "I": { "tag": "forge:ingots/iron" },
-    "P": { "tag": "minecraft:planks" },
-    "S": { "tag": "forge:rods/wooden" }
-  },
-  "result": { "item": "iblis:crossbow_bolt", "count": 8 }
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [{ "type": "iblis:config_enabled", "option": "crossbow_bolt_recipe", "expected": false }],
+      "recipe": {
+        "type": "minecraft:crafting_shaped",
+        "pattern": [" I ", " P ", " S "],
+        "key": {
+          "I": { "tag": "forge:ingots/iron" },
+          "P": { "tag": "minecraft:planks" },
+          "S": { "tag": "forge:rods/wooden" }
+        },
+        "result": { "item": "iblis:crossbow_bolt", "count": 8 }
+      }
+    },
+    {
+      "conditions": [{ "type": "iblis:config_enabled", "option": "crossbow_bolt_recipe" }],
+      "recipe": {
+        "type": "minecraft:crafting_shaped",
+        "pattern": [" I ", " P ", " S "],
+        "key": {
+          "I": { "tag": "forge:nuggets/iron" },
+          "P": { "tag": "minecraft:planks" },
+          "S": { "tag": "forge:rods/wooden" }
+        },
+        "result": { "item": "iblis:crossbow_bolt", "count": 8 }
+      }
+    }
+  ]
 }

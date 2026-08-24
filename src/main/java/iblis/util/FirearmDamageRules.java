@@ -1,6 +1,8 @@
 package iblis.util;
 
 import iblis.IblisMod;
+import iblis.config.IblisConfig;
+import iblis.config.Legacy112Feature;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerBossEvent;
@@ -13,6 +15,8 @@ import net.minecraftforge.common.Tags;
 import net.minecraftforge.entity.PartEntity;
 
 public final class FirearmDamageRules {
+    private static final float MODERN_LUCKY_SHOT_MULTIPLIER = 1.5F;
+    private static final float LEGACY_LUCKY_SHOT_MULTIPLIER = 100.0F;
     private static final float BOSS_BASE_DAMAGE_MULTIPLIER = 0.6F;
     private static final float BOSS_HEADSHOT_MULTIPLIER_CAP = 1.5F;
     private static final TagKey<EntityType<?>> FIREARM_BOSSES = TagKey.create(
@@ -54,12 +58,29 @@ public final class FirearmDamageRules {
     }
 
     public static float scaleBaseDamage(Entity target, float damage) {
-        return isBoss(target) ? damage * BOSS_BASE_DAMAGE_MULTIPLIER : damage;
+        return isBoss(target)
+                && !IblisConfig.useLegacy112(Legacy112Feature.BOSS_FIREARM_DAMAGE)
+                ? damage * BOSS_BASE_DAMAGE_MULTIPLIER : damage;
     }
 
     public static float headshotMultiplier(Entity target, float normalMultiplier) {
         return isBoss(target)
+                && !IblisConfig.useLegacy112(Legacy112Feature.BOSS_FIREARM_DAMAGE)
                 ? Math.min(normalMultiplier, BOSS_HEADSHOT_MULTIPLIER_CAP)
                 : normalMultiplier;
+    }
+
+    public static float luckyShotMultiplier() {
+        return IblisConfig.useLegacy112(Legacy112Feature.FIREARM_LUCKY_SHOT_DAMAGE)
+                ? LEGACY_LUCKY_SHOT_MULTIPLIER : MODERN_LUCKY_SHOT_MULTIPLIER;
+    }
+
+    /** Keeps the fixed Boss health-bar wipe out of the optional legacy damage mode. */
+    public static float normalizeLegacyLuckyShot(
+            Entity target, float damage, boolean legacyLuckyShot) {
+        if (!legacyLuckyShot || !isBoss(target)) {
+            return damage;
+        }
+        return damage * MODERN_LUCKY_SHOT_MULTIPLIER / LEGACY_LUCKY_SHOT_MULTIPLIER;
     }
 }

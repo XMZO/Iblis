@@ -2,7 +2,10 @@
   "type": "forge:conditional",
   "recipes": [
     {
-      "conditions": [{ "type": "iblis:config_enabled", "option": "shotgun" }],
+      "conditions": [
+        { "type": "iblis:config_enabled", "option": "shotgun" },
+        { "type": "iblis:config_enabled", "option": "shotgun_recipe", "expected": false }
+      ],
       "recipe": {
         "type": "minecraft:crafting_shaped",
         "pattern": ["SSS", "SSS", "BTW"],
@@ -12,10 +15,23 @@
           "T": { "item": "iblis:trigger_spring" },
           "B": { "tag": "forge:storage_blocks/iron" }
         },
-        "result": {
-          "item": "iblis:six_barrels_shotgun",
-          "nbt": "{durability:600}"
-        }
+        "result": { "item": "iblis:six_barrels_shotgun", "nbt": "{durability:600}" }
+      }
+    },
+    {
+      "conditions": [
+        { "type": "iblis:config_enabled", "option": "shotgun" },
+        { "type": "iblis:config_enabled", "option": "shotgun_recipe" }
+      ],
+      "recipe": {
+        "type": "minecraft:crafting_shaped",
+        "pattern": ["  W", " ST", "S  "],
+        "key": {
+          "W": { "tag": "minecraft:planks" },
+          "S": { "tag": "forge:ingots/steel" },
+          "T": { "item": "iblis:trigger_spring" }
+        },
+        "result": { "item": "iblis:six_barrels_shotgun", "nbt": "{durability:600}" }
       }
     }
   ]

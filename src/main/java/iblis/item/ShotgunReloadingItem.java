@@ -1,7 +1,10 @@
 package iblis.item;
 
+import iblis.config.IblisConfig;
+import iblis.config.Legacy112Feature;
 import iblis.player.IblisPlayerData;
 import iblis.player.PlayerDataAccess;
+import iblis.player.PlayerSkill;
 import iblis.registry.IblisSounds;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -50,7 +53,7 @@ public final class ShotgunReloadingItem extends ReloadingFirearmItem {
                 if (!ammunition.isEmpty()) {
                     IblisPlayerData data = PlayerDataAccess.get(player);
                     int reloadTick = data.reloadTick();
-                    if (++reloadTick >= RELOAD_TICKS_PER_SHELL) {
+                    if (++reloadTick >= reloadTicksPerShell(player)) {
                         reloadAmmo(ammunition, player, tag);
                         level.playSound(null, player.getX(), player.getY(), player.getZ(),
                                 IblisSounds.SHOTGUN_AMMO_LOADING.get(), SoundSource.PLAYERS,
@@ -62,19 +65,40 @@ public final class ShotgunReloadingItem extends ReloadingFirearmItem {
             }
         } else if (!level.isClientSide) {
             IblisPlayerData data = PlayerDataAccess.get(player);
+            if (IblisConfig.useLegacy112(Legacy112Feature.SHOTGUN_RELOAD_TIMING)) {
+                if (player.getAttackStrengthScale(0.0F) < 1.0F) {
+                    return;
+                }
+                finishReload(level, player, stack, data);
+                return;
+            }
             int reloadTick = data.reloadTick() + 1;
             if (reloadTick >= RELOAD_FINISH_TICKS) {
-                data.setReloadTick(0);
-                player.setItemInHand(InteractionHand.MAIN_HAND,
-                        FirearmItem.transfer(firearm.get(), stack));
-                player.resetAttackStrengthTicker();
-                level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                        IblisSounds.SHOTGUN_HAMMER_COCK.get(), SoundSource.PLAYERS,
-                        1.0F, level.random.nextFloat() * 0.2F + 0.8F);
+                finishReload(level, player, stack, data);
             } else {
                 data.setReloadTick(reloadTick);
             }
         }
+    }
+
+    private static int reloadTicksPerShell(Player player) {
+        if (!IblisConfig.useLegacy112(Legacy112Feature.SHOTGUN_RELOAD_TIMING)) {
+            return RELOAD_TICKS_PER_SHELL;
+        }
+        double skill = Math.max(0.0, PlayerSkill.SHARPSHOOTING.getRawFullValue(player));
+        // The old post-increment comparison takes one tick beyond the threshold.
+        return Math.max(3, (int) Math.ceil(16.0 / (skill + 1.0) + 2.0) + 1);
+    }
+
+    private void finishReload(
+            Level level, Player player, ItemStack stack, IblisPlayerData data) {
+        data.setReloadTick(0);
+        player.setItemInHand(InteractionHand.MAIN_HAND,
+                FirearmItem.transfer(firearm.get(), stack));
+        player.resetAttackStrengthTicker();
+        level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                IblisSounds.SHOTGUN_HAMMER_COCK.get(), SoundSource.PLAYERS,
+                1.0F, level.random.nextFloat() * 0.2F + 0.8F);
     }
 
     @Override

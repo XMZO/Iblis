@@ -1,5 +1,21 @@
 {
-  "type": "minecraft:crafting_shapeless",
-  "ingredients": [{ "tag": "forge:cobblestone/normal" }],
-  "result": { "item": "iblis:boulder", "count": 4 }
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [{ "type": "iblis:config_enabled", "option": "boulder_recipes", "expected": false }],
+      "recipe": {
+        "type": "minecraft:crafting_shapeless",
+        "ingredients": [{ "tag": "forge:cobblestone/normal" }],
+        "result": { "item": "iblis:boulder", "count": 4 }
+      }
+    },
+    {
+      "conditions": [{ "type": "iblis:config_enabled", "option": "boulder_recipes" }],
+      "recipe": {
+        "type": "minecraft:crafting_shapeless",
+        "ingredients": [{ "tag": "forge:cobblestone/normal" }],
+        "result": { "item": "iblis:boulder", "count": 9 }
+      }
+    }
+  ]
 }

@@ -1,9 +1,26 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "pattern": ["N N", "NIN", "N N"],
-  "key": {
-    "N": { "tag": "forge:nuggets/steel" },
-    "I": { "tag": "forge:ingots/iron" }
-  },
-  "result": { "item": "iblis:trigger_spring" }
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [{ "type": "iblis:config_enabled", "option": "trigger_spring_recipe", "expected": false }],
+      "recipe": {
+        "type": "minecraft:crafting_shaped",
+        "pattern": ["N N", "NIN", "N N"],
+        "key": {
+          "N": { "tag": "forge:nuggets/steel" },
+          "I": { "tag": "forge:ingots/iron" }
+        },
+        "result": { "item": "iblis:trigger_spring" }
+      }
+    },
+    {
+      "conditions": [{ "type": "iblis:config_enabled", "option": "trigger_spring_recipe" }],
+      "recipe": {
+        "type": "minecraft:crafting_shaped",
+        "pattern": ["N ", " N"],
+        "key": { "N": { "tag": "forge:nuggets/steel" } },
+        "result": { "item": "iblis:trigger_spring" }
+      }
+    }
+  ]
 }

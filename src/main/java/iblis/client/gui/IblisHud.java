@@ -2,6 +2,7 @@ package iblis.client.gui;
 
 import iblis.IblisMod;
 import iblis.client.IblisClientEvents;
+import iblis.compat.CompatHooks;
 import iblis.config.IblisConfig;
 import iblis.item.FirearmItem;
 import iblis.item.ShotgunReloadingItem;
@@ -55,8 +56,10 @@ public final class IblisHud {
         int width = event.getWindow().getGuiScaledWidth();
         int height = event.getWindow().getGuiScaledHeight();
 
+        ItemStack mainHand = player.getMainHandItem();
         if (overlay.equals(VanillaGuiOverlay.CROSSHAIR.id())
-                && player.getMainHandItem().getItem() instanceof FirearmItem) {
+                && (mainHand.getItem() instanceof FirearmItem
+                || CompatHooks.shouldRenderAimFrame(mainHand, player))) {
             renderAimFrame(graphics, player, width, height);
             event.setCanceled(true);
             return;
@@ -74,8 +77,7 @@ public final class IblisHud {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void foodOverlay(RenderGuiOverlayEvent.Pre event) {
-        if (!event.getOverlay().id().equals(VanillaGuiOverlay.FOOD_LEVEL.id())
-                || ModList.get().isLoaded("appleskin")) {
+        if (!event.getOverlay().id().equals(VanillaGuiOverlay.FOOD_LEVEL.id())) {
             return;
         }
         Minecraft minecraft = Minecraft.getInstance();

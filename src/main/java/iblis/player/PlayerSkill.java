@@ -4,7 +4,6 @@ import iblis.registry.IblisAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Supplier;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -48,7 +47,8 @@ public enum PlayerSkill {
     }
 
     public void raise(Player player, double actionValue) {
-        if (getCurrentValue(player) > cap) {
+        AttributeInstance skillInstance = getAttributeInstance(player);
+        if (skillInstance.getBaseValue() >= cap) {
             return;
         }
         if (player.level().isClientSide) {
@@ -56,8 +56,9 @@ public enum PlayerSkill {
         }
 
         int divider = 1;
-        for (Supplier<Attribute> pathEntry : progressionPath) {
-            AttributeInstance instance = instance(player, pathEntry.get());
+        for (int i = 0; i < progressionPath.size(); i++) {
+            AttributeInstance instance = i == 0
+                    ? skillInstance : instance(player, progressionPath.get(i).get());
             double value = instance.getBaseValue();
             value += pointsPerAction * actionValue / divider
                     / ProgressionCurves.skillTrainingResistance(value);
@@ -70,10 +71,12 @@ public enum PlayerSkill {
         if (player.level().isClientSide) {
             throw new IllegalStateException("Skills must only be raised on the logical server");
         }
-        double difference = targetValue - getCurrentValue(player);
+        AttributeInstance skillInstance = getAttributeInstance(player);
+        double difference = targetValue - skillInstance.getBaseValue();
         int divider = 1;
-        for (Supplier<Attribute> pathEntry : progressionPath) {
-            AttributeInstance instance = instance(player, pathEntry.get());
+        for (int i = 0; i < progressionPath.size(); i++) {
+            AttributeInstance instance = i == 0
+                    ? skillInstance : instance(player, progressionPath.get(i).get());
             instance.setBaseValue(instance.getBaseValue() + difference / divider);
             divider <<= 2;
         }
@@ -114,7 +117,11 @@ public enum PlayerSkill {
     }
 
     private static AttributeInstance instance(Player player, Attribute attribute) {
-        return Objects.requireNonNull(player.getAttribute(attribute),
-                () -> "Missing Iblis player attribute " + attribute.getDescriptionId());
+        AttributeInstance instance = player.getAttribute(attribute);
+        if (instance == null) {
+            throw new IllegalStateException(
+                    "Missing Iblis player attribute " + attribute.getDescriptionId());
+        }
+        return instance;
     }
 }

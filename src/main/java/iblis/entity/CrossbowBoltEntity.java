@@ -1,6 +1,8 @@
 package iblis.entity;
 
-import iblis.IblisMod;
+import iblis.config.BlockInteractionConfig;
+import iblis.config.IblisConfig;
+import iblis.config.Legacy112Feature;
 import iblis.damage.IblisDamageTypes;
 import iblis.registry.IblisEntities;
 import iblis.registry.IblisItems;
@@ -9,11 +11,8 @@ import iblis.util.FirearmDamageRules;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.damagesource.DamageSource;
@@ -34,16 +33,10 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.level.BlockEvent;
 
 public final class CrossbowBoltEntity extends AbstractIblisArrow {
+    private static final String LEGACY_LUCKY_SHOT = "iblisLegacyLuckyShot";
     private static final int MAX_RESISTANT_PENETRATIONS = 8;
     private static final int MAX_GLASS_BREAKS = 1;
     private static final float MAX_BREAKABLE_HARDNESS = 0.5F;
-    private static final TagKey<Block> CROSSBOW_BREAKABLE = TagKey.create(
-            Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(
-                    IblisMod.MOD_ID, "crossbow_breakable"));
-    private static final TagKey<Block> CROSSBOW_PENETRABLE = TagKey.create(
-            Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(
-                    IblisMod.MOD_ID, "crossbow_penetrable"));
-
     private final LongOpenHashSet resistantPenetrations = new LongOpenHashSet();
     private BlockHitResult redirectedBlockHit;
     private long passThroughBlock = Long.MIN_VALUE;
@@ -66,7 +59,17 @@ public final class CrossbowBoltEntity extends AbstractIblisArrow {
 
     @Override
     protected float modifyImpactDamage(Entity target, float damage) {
-        return FirearmDamageRules.scaleBaseDamage(target, damage);
+        return FirearmDamageRules.scaleBaseDamage(target,
+                FirearmDamageRules.normalizeLegacyLuckyShot(target, damage,
+                        getPersistentData().getBoolean(LEGACY_LUCKY_SHOT)));
+    }
+
+    public void setLegacyLuckyShot(boolean value) {
+        if (value) {
+            getPersistentData().putBoolean(LEGACY_LUCKY_SHOT, true);
+        } else {
+            getPersistentData().remove(LEGACY_LUCKY_SHOT);
+        }
     }
 
     @Override
@@ -74,12 +77,16 @@ public final class CrossbowBoltEntity extends AbstractIblisArrow {
         redirectedBlockHit = null;
         passThroughBlock = Long.MIN_VALUE;
 
+        if (IblisConfig.useLegacy112(Legacy112Feature.CROSSBOW_BLOCK_INTERACTIONS)) {
+            return super.findHitEntity(start, vanillaEnd);
+        }
+
         Vec3 fullEnd = start.add(getDeltaMovement());
         BlockHitResult firstBlock = level().clip(new ClipContext(start, fullEnd,
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
         if (firstBlock.getType() != HitResult.Type.BLOCK
-                || !level().getBlockState(firstBlock.getBlockPos())
-                .is(CROSSBOW_PENETRABLE)) {
+                || !BlockInteractionConfig.crossbowPenetrable(
+                level().getBlockState(firstBlock.getBlockPos()))) {
             return super.findHitEntity(start, vanillaEnd);
         }
 
@@ -121,7 +128,7 @@ public final class CrossbowBoltEntity extends AbstractIblisArrow {
         return BlockGetter.traverseBlocks(start, end, level(),
                 (world, pos) -> {
                     BlockState state = world.getBlockState(pos);
-                    boolean potentialPenetration = state.is(CROSSBOW_PENETRABLE);
+                    boolean potentialPenetration = BlockInteractionConfig.crossbowPenetrable(state);
                     VoxelShape shape = (potentialPenetration ? outline : collider)
                             .getBlockShape(state, world, pos);
                     BlockHitResult hit = world.clipWithInteractionOverride(
@@ -150,7 +157,7 @@ public final class CrossbowBoltEntity extends AbstractIblisArrow {
             return false;
         }
 
-        if (state.is(CROSSBOW_BREAKABLE)) {
+        if (BlockInteractionConfig.crossbowBreakable(state)) {
             float hardness = state.getDestroySpeed(level(), pos);
             if (glassBreaks >= MAX_GLASS_BREAKS
                     || hardness < 0.0F || hardness > MAX_BREAKABLE_HARDNESS

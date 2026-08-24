@@ -2,6 +2,7 @@ package iblis.event;
 
 import com.google.common.collect.Multimap;
 import iblis.IblisMod;
+import iblis.compat.CompatHooks;
 import iblis.config.IblisConfig;
 import iblis.damage.IblisDamageTypes;
 import iblis.player.ExtendedFoodData;
@@ -66,6 +67,14 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = IblisMod.MOD_ID)
 public final class IblisGameplayEvents {
     private static final int MAX_SPRINT_COUNTER = 32;
+    private static final CompatHooks.UseItemProfile BOW_USE =
+            new CompatHooks.UseItemProfile(PlayerSkill.ARCHERY, 0);
+    private static final CompatHooks.UseItemProfile CROSSBOW_RELOAD =
+            new CompatHooks.UseItemProfile(PlayerSkill.SHARPSHOOTING, 6);
+    private static final CompatHooks.ProjectileProfile ARROW_PROJECTILE =
+            new CompatHooks.ProjectileProfile(PlayerSkill.ARCHERY, true);
+    private static final CompatHooks.ProjectileProfile CROSSBOW_ARROW_PROJECTILE =
+            new CompatHooks.ProjectileProfile(PlayerSkill.SHARPSHOOTING, false);
 
     private IblisGameplayEvents() {
     }
@@ -300,15 +309,15 @@ public final class IblisGameplayEvents {
                 }
             }
         }
-        if (source.is(DamageTypeTags.IS_PROJECTILE) && shooter instanceof ServerPlayer player
-                && (source.getDirectEntity() instanceof Arrow
-                || source.getDirectEntity() instanceof SpectralArrow)) {
-            PlayerSkill.ARCHERY.raise(player, target.getMaxHealth());
-        }
-        if (shooter instanceof ServerPlayer player && "thrown".equals(source.getMsgId())) {
-            PlayerSkill.THROWING.raise(player, target.getMaxHealth());
-        } else if (shooter instanceof ServerPlayer player && source.is(IblisDamageTypes.SHOTGUN)) {
-            PlayerSkill.SHARPSHOOTING.raise(player, target.getMaxHealth());
+        if (shooter instanceof ServerPlayer player) {
+            CompatHooks.ProjectileProfile profile = projectileProfile(source.getDirectEntity());
+            if (profile != null) {
+                profile.skill().raise(player, target.getMaxHealth());
+            } else if ("thrown".equals(source.getMsgId())) {
+                PlayerSkill.THROWING.raise(player, target.getMaxHealth());
+            } else if (source.is(IblisDamageTypes.SHOTGUN)) {
+                PlayerSkill.SHARPSHOOTING.raise(player, target.getMaxHealth());
+            }
         }
         if (target instanceof ServerPlayer player) {
             AttributeInstance resistance = player.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
@@ -332,21 +341,27 @@ public final class IblisGameplayEvents {
         if (!(event.getEntity() instanceof Player player)) {
             return;
         }
-        boolean bow = event.getItem().getItem() instanceof BowItem;
-        boolean reloadingCrossbow = event.getItem().getItem() instanceof CrossbowReloadingItem;
-        if ((!bow && !reloadingCrossbow)
-                || (bow && !PlayerSkill.ARCHERY.enabled)
-                || (reloadingCrossbow && !PlayerSkill.SHARPSHOOTING.enabled)) {
+        ItemStack stack = event.getItem();
+        CompatHooks.UseItemProfile profile;
+        if (stack.getItem() instanceof BowItem) {
+            profile = BOW_USE;
+        } else if (stack.getItem() instanceof CrossbowReloadingItem) {
+            profile = CROSSBOW_RELOAD;
+        } else {
+            profile = CompatHooks.useItemProfile(stack);
+        }
+        if (profile == null || !profile.skill().enabled) {
             return;
         }
-        double skill = (bow ? PlayerSkill.ARCHERY : PlayerSkill.SHARPSHOOTING)
-                .getFullValue(player) + 1.0;
+        double skill = profile.skill().getFullValue(player) + 1.0;
         int duration = event.getDuration();
-        if (reloadingCrossbow && duration <= 6) {
+        if (duration <= profile.protectedFinalTicks()) {
             return;
         }
         if (skill > 63.0) {
-            event.setDuration(duration - (int) (skill - 63.0));
+            int skipped = Math.min((int) (skill - 63.0),
+                    duration - profile.protectedFinalTicks());
+            event.setDuration(duration - skipped);
         } else if (skill >= 1.0 && duration % (int) (128.0 / skill) == 0) {
             event.setDuration(duration - 1);
         }
@@ -358,18 +373,19 @@ public final class IblisGameplayEvents {
             return;
         }
         LoadedEntityIndex.add(level, event.getEntity());
-        if (event.getEntity() instanceof AbstractArrow arrow
-                && (PlayerSkill.ARCHERY.enabled || PlayerSkill.MECHANICS.enabled)
-                && (arrow instanceof Arrow || arrow instanceof SpectralArrow)) {
+        if (event.getEntity() instanceof AbstractArrow arrow) {
+            CompatHooks.ProjectileProfile profile = projectileProfile(arrow);
             Entity owner = arrow.getOwner();
-            if (owner instanceof ServerPlayer player) {
+            if (profile != null && profile.scaleSpawnDamage()
+                    && (profile.skill().enabled || PlayerSkill.MECHANICS.enabled)
+                    && owner instanceof ServerPlayer player) {
                 double damage = arrow.getBaseDamage();
                 double qualityDamage = value(player, IblisAttributes.PROJECTILE_DAMAGE.get());
                 if (qualityDamage > 0.0) {
                     damage += qualityDamage - 3.0;
                 }
-                if (PlayerSkill.ARCHERY.enabled) {
-                    damage *= PlayerSkill.ARCHERY.getFullValue(player) + 0.2;
+                if (profile.skill().enabled) {
+                    damage *= profile.skill().getFullValue(player) + 0.2;
                 }
                 arrow.setBaseDamage(Math.max(damage, 0.25));
             }
@@ -378,6 +394,15 @@ public final class IblisGameplayEvents {
             PlayerAttributeEffects.refreshMeleeDamageBonus(player);
             PlayerAttributeEffects.refreshWeaponSkill(player);
         }
+    }
+
+    private static CompatHooks.ProjectileProfile projectileProfile(Entity entity) {
+        if (entity instanceof AbstractArrow arrow
+                && (arrow instanceof Arrow || arrow instanceof SpectralArrow)) {
+            boolean crossbow = arrow.shotFromCrossbow();
+            return crossbow ? CROSSBOW_ARROW_PROJECTILE : ARROW_PROJECTILE;
+        }
+        return entity == null ? null : CompatHooks.projectileProfile(entity);
     }
 
     @SubscribeEvent

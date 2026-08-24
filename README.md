@@ -1,6 +1,6 @@
-# Iblis:Reboot
+# Iblis
 
-A Forge 1.20.1 reboot of Iblis.
+Iblis for Forge 1.20.1.
 
 - Minecraft 1.20.1
 - Forge 47+

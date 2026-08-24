@@ -1,9 +1,12 @@
 package iblis.item;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import iblis.IblisMod;
 import iblis.config.IblisConfig;
+import iblis.config.Legacy112Feature;
 import iblis.damage.IblisDamageTypes;
 import iblis.network.IblisNetwork;
 import iblis.player.PlayerDataAccess;
@@ -12,7 +15,9 @@ import iblis.player.PlayerSkill;
 import iblis.registry.IblisAttributes;
 import iblis.registry.IblisSounds;
 import iblis.util.FirearmDamageRules;
+import iblis.util.IblisMath;
 import iblis_headshots.config.HeadshotsConfig;
+import iblis_headshots.util.HeadshotFeedback;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -66,8 +71,6 @@ public abstract class FirearmItem extends Item implements CustomLeftClickItem {
     private static final double AIM_ATTACK_SPEED_MAX_BONUS = 0.10;
     private static final double AIM_INTELLIGENCE_MAX_BONUS = 0.06;
     private static final double AIM_LUCK_MAX_BONUS = 0.04;
-    /** Vanilla-scale lucky hit; headshot damage is calculated separately. */
-    protected static final double LUCKY_SHOT_DAMAGE_MULTIPLIER = 1.5;
     private static final float DOOR_PENETRATION_DAMAGE_MULTIPLIER = 0.55F;
     private static final int SHOTGUN_SHIELD_COOLDOWN_TICKS = 40;
     private static final TagKey<EntityType<?>> SHOTGUN_BREAKABLE_BOATS = TagKey.create(
@@ -84,6 +87,14 @@ public abstract class FirearmItem extends Item implements CustomLeftClickItem {
                     IblisMod.MOD_ID, "shotgun_shield_cooldown_immune"));
     private static final java.util.UUID PROJECTILE_DAMAGE_MODIFIER =
             java.util.UUID.fromString("75717fc3-7f6f-0857-4cdf-000009f5f2d7");
+    private static final Supplier<Multimap<Attribute, AttributeModifier>> MAIN_HAND_MODIFIERS =
+            Suppliers.memoize(() -> ImmutableMultimap.of(
+                    IblisAttributes.PROJECTILE_DAMAGE.get(),
+                    new AttributeModifier(PROJECTILE_DAMAGE_MODIFIER, "Weapon modifier", 12.0,
+                            AttributeModifier.Operation.ADDITION),
+                    Attributes.ATTACK_SPEED,
+                    new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", -2.4,
+                            AttributeModifier.Operation.ADDITION)));
 
     protected FirearmItem(Properties properties) {
         super(properties);
@@ -258,7 +269,8 @@ public abstract class FirearmItem extends Item implements CustomLeftClickItem {
     protected LivingEntity damageEntitiesOnPath(ServerLevel level, DamageSource source,
                                                 Entity shooter, Vec3 start, Vec3 end,
                                                 float projectileDamage, float splashCone,
-                                                double[] doorDistances, int doorCount) {
+                                                double[] doorDistances, int doorCount,
+                                                boolean legacyLuckyShot) {
         LivingEntity lastVictim = null;
         Set<LivingEntity> damagedTargets =
                 Collections.newSetFromMap(new IdentityHashMap<>());
@@ -274,15 +286,18 @@ public abstract class FirearmItem extends Item implements CustomLeftClickItem {
             double hitDistance = hitDistance(entity, start, end);
             if (target != null && entity == target
                     && iblis_headshots.util.HeadshotGeometry.intersectsHead(target, start, end)
-                    && iblis_headshots.util.HeadshotRules.acceptsPlayerHeadshot(
+                    && iblis_headshots.util.HeadshotRules.acceptsHeadshot(
                     target, shooter)) {
                 DamageSource targetSource = targetDamageSource(level, source, shooter, target);
                 float headshotBaseDamage = applyDoorPenetration(
-                        FirearmDamageRules.scaleBaseDamage(target, projectileDamage),
+                        FirearmDamageRules.scaleBaseDamage(target,
+                                FirearmDamageRules.normalizeLegacyLuckyShot(
+                                        target, projectileDamage, legacyLuckyShot)),
                         hitDistance, doorDistances, doorCount);
                 float headshotDamage = headshotBaseDamage
                         * FirearmDamageRules.headshotMultiplier(
-                        target, HeadshotsConfig.damageMultiplier);
+                        target, iblis_headshots.util.HeadshotRules.damageMultiplier(
+                                target, shooter));
                 if (target instanceof net.minecraft.world.entity.monster.Slime slime
                         && target.getHealth() < headshotDamage && slime.getSize() > 1) {
                     slime.setSize(1, false);
@@ -290,9 +305,7 @@ public abstract class FirearmItem extends Item implements CustomLeftClickItem {
                 if (hurtTarget(entity, target, targetSource, headshotDamage)) {
                     damagedTargets.add(target);
                     lastVictim = target;
-                    iblis_headshots.network.HeadshotsNetwork.spawnParticle(level,
-                            target.position().add(0.0, 2.0, 0.0),
-                            new Vec3(0.0, 0.2, 0.0), 15);
+                    HeadshotFeedback.apply(level, target, shooter);
                 }
                 continue;
             }
@@ -304,6 +317,11 @@ public abstract class FirearmItem extends Item implements CustomLeftClickItem {
             float penetratedDamage = applyDoorPenetration(
                     projectileDamage * pathMultiplier, hitDistance,
                     doorDistances, doorCount);
+
+            if (target == null && IblisConfig.useLegacy112(
+                    Legacy112Feature.SHOTGUN_ENTITY_INTERACTIONS)) {
+                continue;
+            }
 
             if (entity.getType().is(FIREARM_BREAKABLE_TARGETS)) {
                 entity.hurt(source, Math.max(1.0F, penetratedDamage));
@@ -318,7 +336,9 @@ public abstract class FirearmItem extends Item implements CustomLeftClickItem {
             if (target == null) {
                 continue;
             }
-            penetratedDamage = FirearmDamageRules.scaleBaseDamage(target, penetratedDamage)
+            penetratedDamage = FirearmDamageRules.scaleBaseDamage(target,
+                    FirearmDamageRules.normalizeLegacyLuckyShot(
+                            target, penetratedDamage, legacyLuckyShot))
                     * HeadshotsConfig.bodyshotDamageMultiplier;
             DamageSource targetSource = targetDamageSource(level, source, shooter, target);
             if (hurtTarget(entity, target, targetSource, penetratedDamage)) {
@@ -334,14 +354,8 @@ public abstract class FirearmItem extends Item implements CustomLeftClickItem {
         if (splashCone == 0.0F) {
             return entity.getBoundingBox().clip(start, end).isPresent() ? 1.0F : 0.0F;
         }
-        float[] trace = iblis.util.IblisMath.calculateOverlap(
-                entity.getBoundingBox(), start, end);
-        float threshold = trace[1] * splashCone;
-        float overlap = 1.0F - (trace[0] * 2.0F + 1.0F) + threshold;
-        if (overlap <= 0.0F || threshold <= 0.0F) {
-            return 0.0F;
-        }
-        return Math.min(Math.min(overlap, 1.0F) / threshold, 1.0F);
+        return IblisMath.calculateOverlapMultiplier(
+                entity.getBoundingBox(), start, end, splashCone);
     }
 
     private static double hitDistance(Entity entity, Vec3 start, Vec3 end) {
@@ -435,13 +449,7 @@ public abstract class FirearmItem extends Item implements CustomLeftClickItem {
         if (slot != EquipmentSlot.MAINHAND) {
             return super.getAttributeModifiers(slot, stack);
         }
-        return ImmutableMultimap.of(
-                IblisAttributes.PROJECTILE_DAMAGE.get(),
-                new AttributeModifier(PROJECTILE_DAMAGE_MODIFIER, "Weapon modifier", 12.0,
-                        AttributeModifier.Operation.ADDITION),
-                Attributes.ATTACK_SPEED,
-                new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", -2.4,
-                        AttributeModifier.Operation.ADDITION));
+        return MAIN_HAND_MODIFIERS.get();
     }
 
     public abstract ItemStack toReloading(ItemStack stack);
@@ -475,6 +483,9 @@ public abstract class FirearmItem extends Item implements CustomLeftClickItem {
      * use separate saturating terms, with a combined hard limit of +20%.
      */
     public static double aimingSpeedMultiplier(Player player) {
+        if (IblisConfig.useLegacy112(Legacy112Feature.FIREARM_AIMING_SPEED)) {
+            return 1.0;
+        }
         double attackLevels = PlayerCharacteristic.ATTACK_SPEED.getInvestedLevels(player);
         double intelligence = Math.max(
                 PlayerCharacteristic.INTELLIGENCE.getCurrentValue(player), 0.0);

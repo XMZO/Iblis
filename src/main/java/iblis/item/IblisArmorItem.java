@@ -1,5 +1,7 @@
 package iblis.item;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import iblis.registry.IblisAttributes;
@@ -19,9 +21,11 @@ public final class IblisArmorItem extends ArmorItem {
             UUID.fromString("9F3D476D-C118-4544-8365-64846904B48E"),
             UUID.fromString("2AD3F246-FEE1-4E67-B886-69FD380BB150")
     };
+    private final Supplier<Multimap<Attribute, AttributeModifier>> attributeModifiers;
 
     public IblisArmorItem(ArmorMaterial material, Type type, Properties properties) {
         super(material, type, properties);
+        attributeModifiers = Suppliers.memoize(this::createAttributeModifiers);
     }
 
     @Override
@@ -34,11 +38,16 @@ public final class IblisArmorItem extends ArmorItem {
     @Override
     public Multimap<Attribute, AttributeModifier> getAttributeModifiers(
             EquipmentSlot slot, ItemStack stack) {
-        Multimap<Attribute, AttributeModifier> base = super.getAttributeModifiers(slot, stack);
         if (slot != getEquipmentSlot()) {
-            return base;
+            return super.getAttributeModifiers(slot, stack);
         }
+        return attributeModifiers.get();
+    }
 
+    private Multimap<Attribute, AttributeModifier> createAttributeModifiers() {
+        EquipmentSlot slot = getEquipmentSlot();
+        Multimap<Attribute, AttributeModifier> base =
+                super.getAttributeModifiers(slot, ItemStack.EMPTY);
         ImmutableMultimap.Builder<Attribute, AttributeModifier> result = ImmutableMultimap.builder();
         result.putAll(base);
         UUID uuid = ARMOR_MODIFIERS[slot.getIndex()];

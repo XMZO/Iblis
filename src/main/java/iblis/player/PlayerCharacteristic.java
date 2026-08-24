@@ -1,7 +1,6 @@
 package iblis.player;
 
 import iblis.registry.IblisAttributes;
-import java.util.Objects;
 import java.util.function.Supplier;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -98,7 +97,11 @@ public enum PlayerCharacteristic {
 
     public AttributeInstance getAttributeInstance(Player player) {
         Attribute value = getAttribute();
-        return Objects.requireNonNull(player.getAttribute(value),
-                () -> "Missing Iblis player characteristic " + value.getDescriptionId());
+        AttributeInstance instance = player.getAttribute(value);
+        if (instance == null) {
+            throw new IllegalStateException(
+                    "Missing Iblis player characteristic " + value.getDescriptionId());
+        }
+        return instance;
     }
 }

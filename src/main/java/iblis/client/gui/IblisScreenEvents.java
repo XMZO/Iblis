@@ -1,6 +1,7 @@
 package iblis.client.gui;
 
 import iblis.IblisMod;
+import iblis.config.IblisConfig;
 import iblis.crafting.IblisCraftingEvents;
 import iblis.network.IblisNetwork;
 import iblis.player.PlayerCharacteristic;
@@ -45,19 +46,19 @@ public final class IblisScreenEvents {
             inventoryScreen = inventory;
             characteristicsButton = null;
             skillsButton = null;
-            if (Arrays.stream(PlayerCharacteristic.values()).anyMatch(value -> value.enabled)) {
+            if (IblisConfig.showCharacteristicsInventoryButton
+                    && hasEnabledCharacteristics()) {
                 characteristicsButton = iconButton(inventory.getGuiLeft() + 125,
                         inventory.getGuiTop() + 61, 0,
                         Component.translatable("iblis.screen.characteristics"),
-                        ignored -> Minecraft.getInstance().setScreen(
-                                new CharacteristicsScreen(inventory)));
+                        ignored -> openCharacteristicsScreen(inventory));
                 event.addListener(characteristicsButton);
             }
-            if (Arrays.stream(PlayerSkill.values()).anyMatch(value -> value.enabled)) {
+            if (IblisConfig.showSkillsInventoryButton && hasEnabledSkills()) {
                 skillsButton = iconButton(inventory.getGuiLeft() + 146,
                         inventory.getGuiTop() + 61, 20,
                         Component.translatable("iblis.screen.skills"),
-                        ignored -> Minecraft.getInstance().setScreen(new SkillsScreen(inventory)));
+                        ignored -> openSkillsScreen(inventory));
                 event.addListener(skillsButton);
             }
         }
@@ -125,6 +126,32 @@ public final class IblisScreenEvents {
         return real > 0.1
                 ? String.format(Locale.ROOT, "%.1f", real)
                 : "1/" + Math.max(1L, Math.round(1.0 / Math.max(real, 0.000001)));
+    }
+
+    public static boolean openCharacteristicsScreen(Screen parent) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null || !hasEnabledCharacteristics()) {
+            return false;
+        }
+        minecraft.setScreen(new CharacteristicsScreen(parent));
+        return true;
+    }
+
+    public static boolean openSkillsScreen(Screen parent) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null || !hasEnabledSkills()) {
+            return false;
+        }
+        minecraft.setScreen(new SkillsScreen(parent));
+        return true;
+    }
+
+    private static boolean hasEnabledCharacteristics() {
+        return Arrays.stream(PlayerCharacteristic.values()).anyMatch(value -> value.enabled);
+    }
+
+    private static boolean hasEnabledSkills() {
+        return Arrays.stream(PlayerSkill.values()).anyMatch(value -> value.enabled);
     }
 
     private static ImageButton iconButton(int x, int y, int textureX,

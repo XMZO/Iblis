@@ -7,7 +7,8 @@ public final class IblisMath {
     private IblisMath() {
     }
 
-    public static float[] calculateOverlap(AABB box, Vec3 start, Vec3 end) {
+    public static float calculateOverlapMultiplier(
+            AABB box, Vec3 start, Vec3 end, float splashCone) {
         float startX = (float) start.x;
         float startY = (float) start.y;
         float startZ = (float) start.z;
@@ -26,6 +27,12 @@ public final class IblisMath {
         float centerDistance = (float) Math.sqrt(
                 centerX * centerX + centerY * centerY + centerZ * centerZ);
         float rayDistance = (float) Math.sqrt(rayX * rayX + rayY * rayY + rayZ * rayZ);
+        if (centerDistance <= 1.0E-6F) {
+            return box.contains(start) ? 1.0F : 0.0F;
+        }
+        if (rayDistance <= 1.0E-6F || splashCone <= 0.0F) {
+            return 0.0F;
+        }
         minX /= centerDistance;
         minY /= centerDistance;
         minZ /= centerDistance;
@@ -38,7 +45,13 @@ public final class IblisMath {
         float dx = distanceToInterval(rayX, minX, maxX);
         float dy = distanceToInterval(rayY, minY, maxY);
         float dz = distanceToInterval(rayZ, minZ, maxZ);
-        return new float[] {Math.max(dx, Math.max(dy, dz)), centerDistance};
+        float angularDistance = Math.max(dx, Math.max(dy, dz));
+        float threshold = centerDistance * splashCone;
+        float overlap = 1.0F - (angularDistance * 2.0F + 1.0F) + threshold;
+        if (overlap <= 0.0F || threshold <= 0.0F) {
+            return 0.0F;
+        }
+        return Math.min(Math.min(overlap, 1.0F) / threshold, 1.0F);
     }
 
     private static float distanceToInterval(float value, float min, float max) {

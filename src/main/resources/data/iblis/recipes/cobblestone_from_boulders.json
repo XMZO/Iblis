@@ -1,8 +1,30 @@
 {
-  "type": "minecraft:crafting_shapeless",
-  "ingredients": [
-    { "item": "iblis:boulder" }, { "item": "iblis:boulder" },
-    { "item": "iblis:boulder" }, { "item": "iblis:boulder" }
-  ],
-  "result": { "item": "minecraft:cobblestone" }
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [{ "type": "iblis:config_enabled", "option": "boulder_recipes", "expected": false }],
+      "recipe": {
+        "type": "minecraft:crafting_shapeless",
+        "ingredients": [
+          { "item": "iblis:boulder" }, { "item": "iblis:boulder" },
+          { "item": "iblis:boulder" }, { "item": "iblis:boulder" }
+        ],
+        "result": { "item": "minecraft:cobblestone" }
+      }
+    },
+    {
+      "conditions": [{ "type": "iblis:config_enabled", "option": "boulder_recipes" }],
+      "recipe": {
+        "type": "minecraft:crafting_shapeless",
+        "ingredients": [
+          { "item": "iblis:boulder" }, { "item": "iblis:boulder" },
+          { "item": "iblis:boulder" }, { "item": "iblis:boulder" },
+          { "item": "iblis:boulder" }, { "item": "iblis:boulder" },
+          { "item": "iblis:boulder" }, { "item": "iblis:boulder" },
+          { "item": "iblis:boulder" }
+        ],
+        "result": { "item": "minecraft:cobblestone" }
+      }
+    }
+  ]
 }

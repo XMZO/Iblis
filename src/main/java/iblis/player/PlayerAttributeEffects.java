@@ -1,10 +1,12 @@
 package iblis.player;
 
 import java.util.UUID;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 public final class PlayerAttributeEffects {
     public static final UUID ATTACK_DAMAGE_BY_CHARACTERISTIC =
@@ -42,14 +44,15 @@ public final class PlayerAttributeEffects {
         }
         attackDamage.removeModifier(ATTACK_DAMAGE_BY_SKILL);
 
-        boolean weapon = player.getMainHandItem().getAttributeModifiers(
-                net.minecraft.world.entity.EquipmentSlot.MAINHAND).containsKey(Attributes.ATTACK_DAMAGE);
+        ItemStack held = player.getMainHandItem();
+        boolean weapon = held.getAttributeModifiers(EquipmentSlot.MAINHAND)
+                .containsKey(Attributes.ATTACK_DAMAGE);
         double amount;
         String name;
         if (weapon && PlayerSkill.SWORDSMANSHIP.enabled) {
             amount = PlayerSkill.SWORDSMANSHIP.getFullValue(player);
             name = "Weapon skill modifier";
-        } else if (player.getMainHandItem().isEmpty()) {
+        } else if (held.isEmpty() && PlayerSkill.BOXING.enabled) {
             amount = PlayerSkill.BOXING.getFullValue(player);
             name = "Boxing skill modifier";
         } else {
