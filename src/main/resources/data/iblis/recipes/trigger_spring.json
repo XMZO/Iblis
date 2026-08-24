@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "pattern": ["N N", "NIN", "N N"],
-  "key": {
-    "N": { "tag": "forge:nuggets/steel" },
-    "I": { "tag": "forge:ingots/iron" }
-  },
-  "result": { "item": "iblis:trigger_spring" }
-}

@@ -8,8 +8,6 @@ import iblis_headshots.network.HeadshotsNetwork;
 import iblis_headshots.util.HeadgearProtection;
 import iblis_headshots.util.HeadshotGeometry;
 import iblis_headshots.util.HeadshotRules;
-import iblis.damage.IblisDamageTypes;
-import iblis.util.FirearmDamageRules;
 import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -61,11 +59,6 @@ public final class HeadshotEvents {
             return damage;
         }
 
-        // Hitscan firearms calculate their exact path and headshot once at the source.
-        if (IblisDamageTypes.isShotgun(source)) {
-            return damage;
-        }
-
         Entity directEntity = source.getDirectEntity();
         if (directEntity == null) {
             return damage;
@@ -92,10 +85,7 @@ public final class HeadshotEvents {
                 victim.position().add(0.0, victim.getEyeHeight(), 0.0),
                 new Vec3(0.0, 0.2, 0.0), 15);
 
-        float multiplier = IblisDamageTypes.isCrossbow(source)
-                ? FirearmDamageRules.headshotMultiplier(
-                victim, HeadshotsConfig.damageMultiplier)
-                : HeadshotsConfig.damageMultiplier;
+        float multiplier = HeadshotsConfig.damageMultiplier;
         ItemStack headgear = victim.getItemBySlot(EquipmentSlot.HEAD);
         temporarilyRemoveBodyArmor(victim);
         if (!headgear.isEmpty()) {

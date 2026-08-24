@@ -1,8 +1,0 @@
-{
-  "type": "minecraft:smelting",
-  "category": "misc",
-  "ingredient": { "item": "iblis:non-sterile_medkit" },
-  "result": "iblis:medkit",
-  "experience": 1.0,
-  "cookingtime": 200
-}

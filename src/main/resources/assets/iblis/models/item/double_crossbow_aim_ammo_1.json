@@ -1,8 +1,0 @@
-{
-  "parent": "iblis:item/firearm_aiming_display",
-  "loader": "forge:obj",
-  "model": "iblis:models/item/double_crossbow_arming_upper_2.obj",
-  "automatic_culling": false,
-  "flip_v": true,
-  "emissive_ambient": false
-}

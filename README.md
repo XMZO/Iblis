@@ -1,12 +1,12 @@
-# Iblis:Reboot
+# Iblis Headshots
 
-A Forge 1.20.1 reboot of Iblis.
+Standalone Iblis Headshots for Forge 1.20.1.
 
 - Minecraft 1.20.1
 - Forge 47+
 - Java 17
 
-`iblis` and `iblis_headshots` remain separate mod IDs and are maintained together in this branch.
+Do not install this alongside the full Iblis mod; Iblis already includes Headshots.
 
 Original project: [Foghrye4/Iblis](https://github.com/Foghrye4/Iblis)
 

@@ -1,6 +1,5 @@
 package iblis_headshots.client;
 
-import iblis.client.gui.ModConfigScreens;
 import iblis_headshots.IblisHeadshotsMod;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ConfigScreenHandler;
@@ -23,6 +22,6 @@ public final class HeadshotsClientSetup {
                 container.registerExtensionPoint(
                         ConfigScreenHandler.ConfigScreenFactory.class,
                         () -> new ConfigScreenHandler.ConfigScreenFactory(
-                                ModConfigScreens::headshots)));
+                                HeadshotsConfigScreen::create)));
     }
 }

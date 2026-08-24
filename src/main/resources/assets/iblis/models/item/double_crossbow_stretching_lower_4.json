@@ -1,8 +1,0 @@
-{
-  "parent": "iblis:item/crossbow_reloading_display",
-  "loader": "forge:obj",
-  "model": "iblis:models/item/double_crossbow_stretching_lower_4.obj",
-  "automatic_culling": false,
-  "flip_v": true,
-  "emissive_ambient": false
-}

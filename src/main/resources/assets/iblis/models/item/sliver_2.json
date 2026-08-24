@@ -1,7 +1,0 @@
-{
-  "loader": "forge:obj",
-  "model": "iblis:models/item/sliver_2.obj",
-  "automatic_culling": false,
-  "flip_v": true,
-  "emissive_ambient": false
-}

@@ -19,6 +19,8 @@
   "iblis.protectionLevel.exceptional": "独特的头部防护",
   "iblis.protectionLevel.perfect": "完美的头部防护",
   "iblis_headshots.config.title": "Iblis 爆头配置",
+  "iblis_headshots.config.reset": "重置",
+  "iblis_headshots.config.page": "第 %s/%s 页",
   "iblis_headshots.config.general": "通用",
   "iblis_headshots.config.option.headshot_particle_size": "爆头粒子大小",
   "iblis_headshots.config.option.headshot_particle_type": "爆头粒子类型",

@@ -1,7 +1,5 @@
 package iblis_headshots.config;
 
-import iblis.config.EditableConfigCategory;
-import iblis.config.EditableConfigValue;
 import java.util.List;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.event.config.ModConfigEvent;

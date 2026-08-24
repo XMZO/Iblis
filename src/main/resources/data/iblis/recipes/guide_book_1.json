@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "pattern": ["BP"],
-  "key": {
-    "B": { "item": "minecraft:writable_book" },
-    "P": { "item": "minecraft:paper" }
-  },
-  "result": { "item": "iblis:guide" }
-}

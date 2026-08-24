@@ -19,6 +19,8 @@
   "iblis.protectionLevel.exceptional": "Exceptional head protection",
   "iblis.protectionLevel.perfect": "Perfect head protection",
   "iblis_headshots.config.title": "Iblis Headshots Configuration",
+  "iblis_headshots.config.reset": "Reset",
+  "iblis_headshots.config.page": "Page %s/%s",
   "iblis_headshots.config.general": "General",
   "iblis_headshots.config.option.headshot_particle_size": "Headshot particle size",
   "iblis_headshots.config.option.headshot_particle_type": "Headshot particle type",

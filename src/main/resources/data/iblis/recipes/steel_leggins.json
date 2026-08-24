@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "pattern": ["III", "I I", "I I"],
-  "key": { "I": { "tag": "forge:ingots/steel" } },
-  "result": {
-    "item": "iblis:steel_leggins",
-    "nbt": "{durability:495}"
-  }
-}

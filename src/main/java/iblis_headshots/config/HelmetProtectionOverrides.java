@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.loading.FMLPaths;
 
 public final class HelmetProtectionOverrides {
     private static final Object2FloatMap<ResourceLocation> VALUES = new Object2FloatOpenHashMap<>();
@@ -31,7 +30,7 @@ public final class HelmetProtectionOverrides {
 
     private static void load() {
         VALUES.clear();
-        Path path = FMLPaths.CONFIGDIR.get().resolve("iblis_headshots_helmets_config.json");
+        Path path = HeadshotsConfigPaths.helmets();
         if (!Files.isRegularFile(path)) {
             return;
         }

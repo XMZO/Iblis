@@ -1,8 +1,0 @@
-{
-  "parent": "iblis:item/firearm_display",
-  "loader": "forge:obj",
-  "model": "iblis:models/item/six_barrels_shotgun_reloading_4.obj",
-  "automatic_culling": false,
-  "flip_v": true,
-  "emissive_ambient": false
-}

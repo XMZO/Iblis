@@ -1,5 +1,0 @@
-{
-  "type": "minecraft:crafting_shapeless",
-  "ingredients": [{ "tag": "forge:cobblestone/normal" }],
-  "result": { "item": "iblis:boulder", "count": 4 }
-}

@@ -1,8 +1,0 @@
-{
-  "replace": false,
-  "values": [
-    "#iblis:shotgun_breakable_wooden_barriers",
-    "#minecraft:doors",
-    "#minecraft:trapdoors"
-  ]
-}
