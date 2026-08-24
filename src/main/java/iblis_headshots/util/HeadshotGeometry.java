@@ -47,7 +47,8 @@ public final class HeadshotGeometry {
     }
 
     public static boolean intersectsHead(LivingEntity entity, Vec3 start, Vec3 end) {
-        return getHeadBox(entity).clip(start, end).isPresent();
+        AABB head = getHeadBox(entity);
+        return head != ZERO && head.clip(start, end).isPresent();
     }
 
     public static AABB getHeadBox(LivingEntity entity) {
@@ -103,13 +104,13 @@ public final class HeadshotGeometry {
         float minZ = (float) (box.minZ - 0.5);
         float maxZ = (float) (box.maxZ - 0.5);
         float x00 = 0.5F + sin * minX + cos * minZ;
-        float z00 = 0.5F + cos * minX + sin * minZ;
+        float z00 = 0.5F + cos * minX - sin * minZ;
         float x11 = 0.5F + sin * maxX + cos * maxZ;
-        float z11 = 0.5F + cos * maxX + sin * maxZ;
+        float z11 = 0.5F + cos * maxX - sin * maxZ;
         float x10 = 0.5F + sin * maxX + cos * minZ;
-        float z10 = 0.5F + cos * maxX + sin * minZ;
+        float z10 = 0.5F + cos * maxX - sin * minZ;
         float x01 = 0.5F + sin * minX + cos * maxZ;
-        float z01 = 0.5F + cos * minX + sin * maxZ;
+        float z01 = 0.5F + cos * minX - sin * maxZ;
         return new AABB(
                 min(x00, x10, x01, x11), box.minY, min(z00, z10, z01, z11),
                 max(x00, x10, x01, x11), box.maxY, max(z00, z10, z01, z11));

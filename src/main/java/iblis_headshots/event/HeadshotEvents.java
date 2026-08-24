@@ -2,17 +2,16 @@ package iblis_headshots.event;
 
 import com.google.common.collect.Multimap;
 import iblis_headshots.IblisHeadshotsMod;
-import iblis_headshots.advancement.HeadshotTrigger;
 import iblis_headshots.config.HeadshotsConfig;
-import iblis_headshots.network.HeadshotsNetwork;
 import iblis_headshots.util.HeadgearProtection;
+import iblis_headshots.util.HeadshotFeedback;
 import iblis_headshots.util.HeadshotGeometry;
 import iblis_headshots.util.HeadshotRules;
-import java.util.Collections;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -26,32 +25,44 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = IblisHeadshotsMod.MOD_ID)
 public final class HeadshotEvents {
-    private static final Set<LivingEntity> HANDLED_IN_HURT =
-            Collections.newSetFromMap(new WeakHashMap<>());
+    private static final EquipmentSlot[] BODY_ARMOR_SLOTS = {
+            EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET
+    };
+    private static final Map<LivingEntity, List<RemovedModifier>> PENDING_ARMOR =
+            new IdentityHashMap<>();
 
     private HeadshotEvents() {
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void livingHurt(LivingHurtEvent event) {
-        if (event.isCanceled()) {
+        if (event.isCanceled() || event.getEntity().level().isClientSide) {
             return;
         }
-        HANDLED_IN_HURT.add(event.getEntity());
         event.setAmount(recalculateDamage(event.getAmount(), event.getEntity(), event.getSource()));
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void livingDamage(LivingDamageEvent event) {
-        if (HANDLED_IN_HURT.remove(event.getEntity())) {
+        if (!event.getEntity().level().isClientSide) {
+            restoreBodyArmor(event.getEntity());
+        }
+    }
+
+    @SubscribeEvent
+    public static void serverTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || PENDING_ARMOR.isEmpty()) {
             return;
         }
-        event.setAmount(recalculateDamage(event.getAmount(), event.getEntity(), event.getSource()));
+        PENDING_ARMOR.values().forEach(HeadshotEvents::restoreModifiers);
+        PENDING_ARMOR.clear();
     }
 
     private static float recalculateDamage(float damage, LivingEntity victim, DamageSource source) {
@@ -76,16 +87,13 @@ public final class HeadshotEvents {
             end = start.add(player.getLookAngle().scale(distanceSquared));
         }
 
+        Entity attacker = source.getEntity();
         if (!HeadshotGeometry.intersectsHead(victim, start, end)
-                || !HeadshotRules.acceptsPlayerHeadshot(victim, source.getEntity())) {
+                || !HeadshotRules.acceptsHeadshot(victim, attacker)) {
             return damage * HeadshotsConfig.bodyshotDamageMultiplier;
         }
 
-        HeadshotsNetwork.spawnParticle(level,
-                victim.position().add(0.0, victim.getEyeHeight(), 0.0),
-                new Vec3(0.0, 0.2, 0.0), 15);
-
-        float multiplier = HeadshotsConfig.damageMultiplier;
+        float multiplier = HeadshotRules.damageMultiplier(victim, attacker);
         ItemStack headgear = victim.getItemBySlot(EquipmentSlot.HEAD);
         temporarilyRemoveBodyArmor(victim);
         if (!headgear.isEmpty()) {
@@ -97,13 +105,7 @@ public final class HeadshotEvents {
                     entity -> entity.broadcastBreakEvent(EquipmentSlot.HEAD));
         }
         damage *= multiplier;
-
-        Entity attacker = source.getEntity();
-        if (attacker instanceof ServerPlayer player && !(victim instanceof ServerPlayer)) {
-            HeadshotTrigger.INSTANCE.trigger(player, victim);
-        } else if (victim instanceof ServerPlayer player) {
-            HeadshotTrigger.INSTANCE.trigger(player, victim);
-        }
+        HeadshotFeedback.apply(level, victim, attacker);
 
         if (victim instanceof Slime slime && victim.getHealth() < damage && slime.getSize() > 1) {
             slime.setSize(1, false);
@@ -112,10 +114,9 @@ public final class HeadshotEvents {
     }
 
     private static void temporarilyRemoveBodyArmor(LivingEntity entity) {
-        EquipmentSlot[] bodySlots = {
-                EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET
-        };
-        for (EquipmentSlot slot : bodySlots) {
+        restoreBodyArmor(entity);
+        List<RemovedModifier> removed = new ArrayList<>();
+        for (EquipmentSlot slot : BODY_ARMOR_SLOTS) {
             ItemStack stack = entity.getItemBySlot(slot);
             if (stack.isEmpty()) {
                 continue;
@@ -123,21 +124,36 @@ public final class HeadshotEvents {
             Multimap<Attribute, AttributeModifier> modifiers = stack.getAttributeModifiers(slot);
             modifiers.forEach((attribute, modifier) -> {
                 AttributeInstance instance = entity.getAttribute(attribute);
-                if (instance != null) {
+                AttributeModifier applied = instance == null
+                        ? null : instance.getModifier(modifier.getId());
+                if (applied != null) {
                     instance.removeModifier(modifier.getId());
+                    removed.add(new RemovedModifier(instance, applied));
                 }
             });
         }
-        entity.getServer().execute(() -> {
-            for (EquipmentSlot slot : bodySlots) {
-                ItemStack current = entity.getItemBySlot(slot);
-                current.getAttributeModifiers(slot).forEach((attribute, modifier) -> {
-                    AttributeInstance instance = entity.getAttribute(attribute);
-                    if (instance != null && instance.getModifier(modifier.getId()) == null) {
-                        instance.addTransientModifier(modifier);
-                    }
-                });
+        if (!removed.isEmpty()) {
+            PENDING_ARMOR.put(entity, removed);
+        }
+    }
+
+    private static void restoreBodyArmor(LivingEntity entity) {
+        List<RemovedModifier> removed = PENDING_ARMOR.remove(entity);
+        if (removed != null) {
+            restoreModifiers(removed);
+        }
+    }
+
+    private static void restoreModifiers(List<RemovedModifier> removed) {
+        for (RemovedModifier entry : removed) {
+            AttributeInstance instance = entry.instance;
+            AttributeModifier modifier = entry.modifier;
+            if (instance.getModifier(modifier.getId()) == null) {
+                instance.addTransientModifier(modifier);
             }
-        });
+        }
+    }
+
+    private record RemovedModifier(AttributeInstance instance, AttributeModifier modifier) {
     }
 }

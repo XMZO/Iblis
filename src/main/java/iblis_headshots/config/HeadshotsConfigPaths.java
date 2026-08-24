@@ -10,6 +10,7 @@ public final class HeadshotsConfigPaths {
     public static final String COMMON = "iblis/iblis-headshots-common.toml";
     private static final String COMMON_FILE = "iblis-headshots-common.toml";
     private static final String HELMETS_FILE = "iblis_headshots_helmets_config.json";
+    private static final String ENTITY_BLACKLIST_FILE = "headshot_entity_blacklist.txt";
     private static boolean prepared;
 
     private HeadshotsConfigPaths() {
@@ -35,6 +36,10 @@ public final class HeadshotsConfigPaths {
 
     public static Path helmets() {
         return FMLPaths.CONFIGDIR.get().resolve("iblis").resolve(HELMETS_FILE);
+    }
+
+    public static Path entityBlacklist() {
+        return FMLPaths.CONFIGDIR.get().resolve("iblis").resolve(ENTITY_BLACKLIST_FILE);
     }
 
     private static void migrate(Path root, Path directory, String fileName) throws IOException {

@@ -2,10 +2,12 @@ package iblis_headshots;
 
 import com.mojang.logging.LogUtils;
 import iblis_headshots.advancement.HeadshotTrigger;
+import iblis_headshots.config.HeadshotEntityBlacklist;
 import iblis_headshots.config.HeadshotsConfig;
 import iblis_headshots.config.HeadshotsConfigPaths;
 import iblis_headshots.config.HelmetProtectionOverrides;
 import iblis_headshots.network.HeadshotsNetwork;
+import iblis_headshots.stats.HeadshotScoreboardCriteria;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -19,11 +21,14 @@ public final class IblisHeadshotsMod {
 
     public IblisHeadshotsMod(FMLJavaModLoadingContext context) {
         HeadshotsConfigPaths.prepare();
+        HeadshotEntityBlacklist.prepareFile();
         HeadshotTrigger.register();
+        HeadshotScoreboardCriteria.bootstrap();
         IEventBus modBus = context.getModEventBus();
         modBus.addListener(HeadshotsConfig::onConfigChanged);
         modBus.addListener(HeadshotsNetwork::onCommonSetup);
         modBus.addListener(HelmetProtectionOverrides::onCommonSetup);
+        modBus.addListener(HeadshotEntityBlacklist::onCommonSetup);
         context.registerConfig(
                 ModConfig.Type.COMMON, HeadshotsConfig.SPEC, HeadshotsConfigPaths.COMMON);
     }
