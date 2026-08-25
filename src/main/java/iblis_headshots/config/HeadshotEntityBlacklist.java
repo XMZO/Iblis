@@ -18,10 +18,11 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public final class HeadshotEntityBlacklist {
     private static final String DEFAULT_CONTENT = String.join(System.lineSeparator(),
+            "# Enable headshot_entity_blacklist_enabled to use this file.",
             "# Listed entity types never receive headshot damage; head hits use body-shot damage.",
             "# Remove '# ' from the next line to make players immune to headshots.",
             "# Add other entities one per line as namespace:entity, e.g. minecraft:villager.",
-            "# Ignored while headshot_entity_whitelist_enabled is true.",
+            "# Ignored whenever headshot_entity_whitelist_enabled is true.",
             "# Restart the game or server after editing. Invalid or missing IDs are skipped.",
             "# minecraft:player",
             "");
