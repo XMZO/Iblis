@@ -16,7 +16,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 
 public final class HeadshotTrigger extends SimpleCriterionTrigger<HeadshotTrigger.Instance> {
     private static final ResourceLocation ID =
-            ResourceLocation.fromNamespaceAndPath(IblisHeadshotsMod.MOD_ID, "headshot");
+            new ResourceLocation(IblisHeadshotsMod.MOD_ID, "headshot");
     public static final HeadshotTrigger INSTANCE = CriteriaTriggers.register(new HeadshotTrigger());
 
     private HeadshotTrigger() {

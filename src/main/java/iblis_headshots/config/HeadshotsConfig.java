@@ -16,6 +16,7 @@ public final class HeadshotsConfig {
     private static final ForgeConfigSpec.DoubleValue BODYSHOT_DAMAGE_MULTIPLIER;
     private static final ForgeConfigSpec.DoubleValue PLAYER_HEADSHOT_CHANCE;
     private static final ForgeConfigSpec.BooleanValue PLAYER_HEADSHOT_CHANCE_AFFECTS_PVP;
+    private static final ForgeConfigSpec.BooleanValue PREVENT_TACZ_DOUBLE_HEADSHOTS;
 
     public static final ForgeConfigSpec SPEC;
 
@@ -28,6 +29,7 @@ public final class HeadshotsConfig {
     public static volatile float bodyshotDamageMultiplier = 1.0F;
     public static volatile float playerHeadshotChance = 1.0F;
     public static volatile boolean playerHeadshotChanceAffectsPvp;
+    public static volatile boolean preventTaczDoubleHeadshots;
 
     static {
         BUILDER.push("general");
@@ -58,6 +60,10 @@ public final class HeadshotsConfig {
         PLAYER_HEADSHOT_CHANCE_AFFECTS_PVP = BUILDER.comment(
                         "If true, player_headshot_chance also applies to PvP head hits.")
                 .define("player_headshot_chance_affects_pvp", false);
+        PREVENT_TACZ_DOUBLE_HEADSHOTS = BUILDER.comment(
+                        "Use TACZ's native headshot damage and skip Headshots' second calculation.",
+                        "False preserves the previous combined behavior.")
+                .define("prevent_tacz_double_headshots", false);
         BUILDER.pop();
         SPEC = BUILDER.build();
     }
@@ -85,6 +91,7 @@ public final class HeadshotsConfig {
         bodyshotDamageMultiplier = BODYSHOT_DAMAGE_MULTIPLIER.get().floatValue();
         playerHeadshotChance = PLAYER_HEADSHOT_CHANCE.get().floatValue();
         playerHeadshotChanceAffectsPvp = PLAYER_HEADSHOT_CHANCE_AFFECTS_PVP.get();
+        preventTaczDoubleHeadshots = PREVENT_TACZ_DOUBLE_HEADSHOTS.get();
     }
 
     public static void save() {
@@ -114,6 +121,9 @@ public final class HeadshotsConfig {
                         "player_headshot_chance", PLAYER_HEADSHOT_CHANCE, 0.0, 1.0),
                 EditableConfigValue.booleanValue(
                         "player_headshot_chance_affects_pvp",
-                        PLAYER_HEADSHOT_CHANCE_AFFECTS_PVP)));
+                        PLAYER_HEADSHOT_CHANCE_AFFECTS_PVP),
+                EditableConfigValue.booleanValue(
+                        "prevent_tacz_double_headshots",
+                        PREVENT_TACZ_DOUBLE_HEADSHOTS)));
     }
 }

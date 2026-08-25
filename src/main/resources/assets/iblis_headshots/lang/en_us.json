@@ -31,6 +31,7 @@
   "iblis_headshots.config.option.bodyshot_damage_mutiplier": "Body-shot damage multiplier",
   "iblis_headshots.config.option.player_headshot_chance": "Headshot chance against players",
   "iblis_headshots.config.option.player_headshot_chance_affects_pvp": "Apply player chance to PvP",
+  "iblis_headshots.config.option.prevent_tacz_double_headshots": "Prevent duplicate TACZ headshots",
   "iblis_headshots.config.tooltip.general.headshot_particle_size": "Visual size of the headshot particle effect.",
   "iblis_headshots.config.tooltip.general.headshot_particle_type": "Particle type: 0 = none, 1 = skull, 2 = aim, 3 = star.",
   "iblis_headshots.config.tooltip.general.non_projectile_headshot_min_distance": "Minimum distance for non-projectile headshots, in blocks.",
@@ -39,5 +40,6 @@
   "iblis_headshots.config.tooltip.general.headgear_damage_mutiplier": "Durability damage multiplier applied to headgear on a headshot.",
   "iblis_headshots.config.tooltip.general.bodyshot_damage_mutiplier": "Non-headshot damage multiplier; 1.0 keeps normal damage.",
   "iblis_headshots.config.tooltip.general.player_headshot_chance": "Chance that a head hit on a player counts as a headshot; 1.0 = 100%.",
-  "iblis_headshots.config.tooltip.general.player_headshot_chance_affects_pvp": "If enabled, the chance also applies to PvP; otherwise PvP head hits always count."
+  "iblis_headshots.config.tooltip.general.player_headshot_chance_affects_pvp": "If enabled, the chance also applies to PvP; otherwise PvP head hits always count.",
+  "iblis_headshots.config.tooltip.general.prevent_tacz_double_headshots": "Use TACZ's native headshot damage only. Headshots blacklist, chance and counters still apply."
 }

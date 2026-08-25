@@ -2,6 +2,7 @@ package iblis_headshots.event;
 
 import com.google.common.collect.Multimap;
 import iblis_headshots.IblisHeadshotsMod;
+import iblis_headshots.compat.NativeHeadshotSources;
 import iblis_headshots.config.HeadshotsConfig;
 import iblis_headshots.util.HeadgearProtection;
 import iblis_headshots.util.HeadshotFeedback;
@@ -67,6 +68,10 @@ public final class HeadshotEvents {
 
     private static float recalculateDamage(float damage, LivingEntity victim, DamageSource source) {
         if (!(victim.level() instanceof ServerLevel level) || damage < 0.1F) {
+            return damage;
+        }
+
+        if (NativeHeadshotSources.hasNativeHeadshotDamage(source)) {
             return damage;
         }
 

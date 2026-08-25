@@ -31,6 +31,7 @@
   "iblis_headshots.config.option.bodyshot_damage_mutiplier": "非爆头伤害倍率",
   "iblis_headshots.config.option.player_headshot_chance": "玩家被爆头概率",
   "iblis_headshots.config.option.player_headshot_chance_affects_pvp": "PvP 应用被爆头概率",
+  "iblis_headshots.config.option.prevent_tacz_double_headshots": "防止 TACZ 双重爆头倍率",
   "iblis_headshots.config.tooltip.general.headshot_particle_size": "爆头粒子效果的显示大小。",
   "iblis_headshots.config.tooltip.general.headshot_particle_type": "粒子类型：0 = 无，1 = 骷髅，2 = 准星，3 = 星形。",
   "iblis_headshots.config.tooltip.general.non_projectile_headshot_min_distance": "非弹射物触发爆头所需的最小距离，单位为方块。",
@@ -39,5 +40,6 @@
   "iblis_headshots.config.tooltip.general.headgear_damage_mutiplier": "爆头时对头部装备造成的耐久伤害倍率。",
   "iblis_headshots.config.tooltip.general.bodyshot_damage_mutiplier": "非爆头伤害倍率；1.0 表示保持原伤害。",
   "iblis_headshots.config.tooltip.general.player_headshot_chance": "命中玩家头部后判为爆头的概率；1.0 = 100%。",
-  "iblis_headshots.config.tooltip.general.player_headshot_chance_affects_pvp": "开启后该概率也用于 PvP；关闭时 PvP 头部命中必定爆头。"
+  "iblis_headshots.config.tooltip.general.player_headshot_chance_affects_pvp": "开启后该概率也用于 PvP；关闭时 PvP 头部命中必定爆头。",
+  "iblis_headshots.config.tooltip.general.prevent_tacz_double_headshots": "仅使用 TACZ 自身爆头伤害；爆头黑名单、概率与统计仍生效。"
 }
