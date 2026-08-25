@@ -6,6 +6,7 @@ import iblis_headshots.compat.HeadshotsCompatBootstrap;
 import iblis_headshots.config.HeadshotsConfig;
 import iblis_headshots.advancement.HeadshotTrigger;
 import iblis_headshots.config.HeadshotEntityBlacklist;
+import iblis_headshots.config.HeadshotEntityWhitelist;
 import iblis_headshots.config.HelmetProtectionOverrides;
 import iblis_headshots.network.HeadshotsNetwork;
 import iblis_headshots.stats.HeadshotScoreboardCriteria;
@@ -29,6 +30,7 @@ public final class IblisHeadshotsMod {
     public IblisHeadshotsMod(FMLJavaModLoadingContext context) {
         IblisConfigPaths.prepare();
         HeadshotEntityBlacklist.prepareFile();
+        HeadshotEntityWhitelist.prepareFile();
         HeadshotTrigger.register();
         HeadshotScoreboardCriteria.bootstrap();
         IEventBus modBus = context.getModEventBus();
@@ -37,6 +39,7 @@ public final class IblisHeadshotsMod {
         modBus.addListener(HeadshotsNetwork::onCommonSetup);
         modBus.addListener(HelmetProtectionOverrides::onCommonSetup);
         modBus.addListener(HeadshotEntityBlacklist::onCommonSetup);
+        modBus.addListener(HeadshotEntityWhitelist::onCommonSetup);
         ModLoadingContext.get().registerConfig(
                 ModConfig.Type.COMMON, HeadshotsConfig.SPEC, IblisConfigPaths.HEADSHOTS_COMMON);
     }

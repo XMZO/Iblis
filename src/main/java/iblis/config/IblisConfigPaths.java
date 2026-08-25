@@ -12,6 +12,7 @@ public final class IblisConfigPaths {
     public static final String HEADSHOTS_COMMON = "iblis/iblis-headshots-common.toml";
     public static final String HEADSHOT_HELMETS = "iblis_headshots_helmets_config.json";
     public static final String HEADSHOT_ENTITY_BLACKLIST = "headshot_entity_blacklist.txt";
+    public static final String HEADSHOT_ENTITY_WHITELIST = "headshot_entity_whitelist.txt";
     private static final String[] LEGACY_FILES = {
             "iblis-common.toml", "iblis-headshots-common.toml", HEADSHOT_HELMETS
     };
@@ -49,6 +50,10 @@ public final class IblisConfigPaths {
 
     public static Path headshotEntityBlacklist() {
         return resolve(HEADSHOT_ENTITY_BLACKLIST);
+    }
+
+    public static Path headshotEntityWhitelist() {
+        return resolve(HEADSHOT_ENTITY_WHITELIST);
     }
 
     public static Path resolve(String fileName) {
