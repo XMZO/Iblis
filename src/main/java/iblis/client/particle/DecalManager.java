@@ -27,7 +27,7 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = IblisMod.MOD_ID, value = Dist.CLIENT)
 public final class DecalManager {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation TEXTURE = new ResourceLocation(
             IblisMod.MOD_ID, "textures/particle/particles.png");
     private static final RenderType RENDER_TYPE = DecalRenderType.create(TEXTURE);
     private static final BufferBuilder BUFFER = new BufferBuilder(RENDER_TYPE.bufferSize());

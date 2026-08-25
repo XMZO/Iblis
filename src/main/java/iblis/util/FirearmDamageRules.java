@@ -20,7 +20,7 @@ public final class FirearmDamageRules {
     private static final float BOSS_BASE_DAMAGE_MULTIPLIER = 0.6F;
     private static final float BOSS_HEADSHOT_MULTIPLIER_CAP = 1.5F;
     private static final TagKey<EntityType<?>> FIREARM_BOSSES = TagKey.create(
-            Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(
+            Registries.ENTITY_TYPE, new ResourceLocation(
                     IblisMod.MOD_ID, "firearm_bosses"));
     private static final ClassValue<Boolean> HAS_SERVER_BOSS_BAR = new ClassValue<>() {
         @Override

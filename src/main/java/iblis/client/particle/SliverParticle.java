@@ -93,7 +93,7 @@ public final class SliverParticle extends Particle {
     }
 
     private static ResourceLocation model(String name) {
-        return ResourceLocation.fromNamespaceAndPath(IblisMod.MOD_ID, "item/" + name);
+        return new ResourceLocation(IblisMod.MOD_ID, "item/" + name);
     }
 
     public static final class Provider implements ParticleProvider<SimpleParticleType> {

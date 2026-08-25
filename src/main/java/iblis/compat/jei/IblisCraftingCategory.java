@@ -28,12 +28,16 @@ public final class IblisCraftingCategory implements IRecipeCategory<CraftingReci
     private static final int WIDTH = 116;
     private static final int HEIGHT = 54;
 
+    private final IDrawable background;
     private final IDrawable icon;
+    private final IDrawableStatic slotBackground;
     private final IDrawableStatic recipeArrow;
     private final ICraftingGridHelper craftingGridHelper;
 
     public IblisCraftingCategory(IGuiHelper guiHelper) {
+        background = guiHelper.createBlankDrawable(WIDTH, HEIGHT);
         icon = guiHelper.createDrawableItemStack(IblisItems.HEAVY_SHIELD.get().getDefaultInstance());
+        slotBackground = guiHelper.getSlotDrawable();
         recipeArrow = guiHelper.getRecipeArrow();
         craftingGridHelper = guiHelper.createCraftingGridHelper();
     }
@@ -46,6 +50,11 @@ public final class IblisCraftingCategory implements IRecipeCategory<CraftingReci
     @Override
     public Component getTitle() {
         return Component.translatable("iblis.jei.iblis_crafting");
+    }
+
+    @Override
+    public IDrawable getBackground() {
+        return background;
     }
 
     @Override
@@ -79,12 +88,14 @@ public final class IblisCraftingCategory implements IRecipeCategory<CraftingReci
                 .map(Ingredient::getItems)
                 .map(Arrays::asList)
                 .toList();
-        craftingGridHelper.createAndSetInputs(builder, inputs, recipeWidth, recipeHeight);
+        craftingGridHelper.createAndSetInputs(builder, inputs, recipeWidth, recipeHeight)
+                .forEach(slot -> slot.setBackground(slotBackground, -1, -1));
 
         var level = Minecraft.getInstance().level;
         if (level != null) {
             ItemStack result = recipe.getResultItem(level.registryAccess()).copy();
-            craftingGridHelper.createAndSetOutputs(builder, List.of(result));
+            craftingGridHelper.createAndSetOutputs(builder, List.of(result))
+                    .setBackground(slotBackground, -1, -1);
         }
     }
 

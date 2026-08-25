@@ -27,7 +27,7 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = IblisMod.MOD_ID, value = Dist.CLIENT)
 public final class IblisScreenEvents {
-    public static final ResourceLocation ICONS = ResourceLocation.fromNamespaceAndPath(
+    public static final ResourceLocation ICONS = new ResourceLocation(
             IblisMod.MOD_ID, "textures/gui/icons.png");
     private static ImageButton trainButton;
     private static CraftingScreen trainScreen;

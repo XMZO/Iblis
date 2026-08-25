@@ -21,7 +21,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = IblisMod.MOD_ID)
 public final class PlayerDataEvents {
     private static final ResourceLocation PLAYER_DATA_ID =
-            ResourceLocation.fromNamespaceAndPath(IblisMod.MOD_ID, "player_data");
+            new ResourceLocation(IblisMod.MOD_ID, "player_data");
 
     private PlayerDataEvents() {
     }

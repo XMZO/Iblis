@@ -21,7 +21,7 @@ import slimeknights.tconstruct.library.tools.stat.ToolStats;
 /** Reapplies Iblis crafting quality whenever Tinkers' Construct rebuilds tool stats. */
 public final class TinkersCraftsmanshipModifier extends Modifier
         implements ToolStatsModifierHook {
-    static final ResourceLocation QUALITY = ResourceLocation.fromNamespaceAndPath(
+    static final ResourceLocation QUALITY = new ResourceLocation(
             IblisMod.MOD_ID, "tconstruct_crafting_quality");
     private static final ModifierDeferredRegister MODIFIERS =
             ModifierDeferredRegister.create(IblisMod.MOD_ID);

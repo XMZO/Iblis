@@ -1,25 +1,21 @@
-package iblis.compat.tacz;
+package iblis_headshots.compat.tacz;
 
-import iblis.IblisMod;
-import iblis.compat.CompatHooks;
-import iblis_headshots.advancement.HeadshotTrigger;
+import iblis_headshots.IblisHeadshotsMod;
+import iblis_headshots.compat.NativeHeadshotSources;
 import iblis_headshots.config.HeadshotsConfig;
-import iblis_headshots.network.HeadshotsNetwork;
-import iblis_headshots.stats.HeadshotScoreboardCriteria;
+import iblis_headshots.util.HeadshotFeedback;
 import iblis_headshots.util.HeadshotRules;
 import java.lang.reflect.Method;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.LogicalSide;
 
-/** Lets TACZ own its headshot multiplier when the explicit option is enabled. */
-final class TaczHeadshotCompat {
+/** Lets TACZ own its multiplier while Headshots keeps rules and feedback. */
+public final class TaczHeadshotCompat {
     private static final String PRE_EVENT =
             "com.tacz.guns.api.event.common.EntityHurtByGunEvent$Pre";
     private static final String POST_EVENT =
@@ -32,8 +28,16 @@ final class TaczHeadshotCompat {
     private TaczHeadshotCompat() {
     }
 
-    static void register() {
-        Class<?> bulletType = TaczEventAccess.type(BULLET_TYPE);
+    public static void register() {
+        try {
+            registerEvents();
+        } catch (RuntimeException | LinkageError error) {
+            failed = true;
+            throw error;
+        }
+    }
+
+    private static void registerEvents() {
         Class<? extends Event> preType = TaczEventAccess.eventType(PRE_EVENT);
         Class<? extends Event> postType = TaczEventAccess.eventType(POST_EVENT);
         Class<? extends Event> killType = TaczEventAccess.eventType(KILL_EVENT);
@@ -55,18 +59,27 @@ final class TaczHeadshotCompat {
                 TaczEventAccess.method(killType, "getAttacker"),
                 TaczEventAccess.method(killType, "isHeadShot"));
 
-        CompatHooks.registerNativeHeadshotSource("tacz:headshots",
-                source -> HeadshotsConfig.preventTaczDoubleHeadshots && !failed
-                        && isTaczBullet(source, bulletType));
         TaczEventAccess.listen(preType, EventPriority.LOWEST,
                 event -> filterHeadshot(event, pre));
         TaczEventAccess.listen(postType, event -> record(event, post));
         TaczEventAccess.listen(killType, event -> record(event, kill));
+        NativeHeadshotSources.register("tacz:headshots",
+                source -> HeadshotsConfig.preventTaczDoubleHeadshots && !failed
+                        && isTaczBullet(source));
     }
 
-    private static boolean isTaczBullet(DamageSource source, Class<?> bulletType) {
-        return "tacz.bullet".equals(source.getMsgId())
-                || bulletType.isInstance(source.getDirectEntity());
+    private static boolean isTaczBullet(DamageSource source) {
+        if ("tacz.bullet".equals(source.getMsgId())) {
+            return true;
+        }
+        Entity direct = source.getDirectEntity();
+        for (Class<?> type = direct == null ? null : direct.getClass();
+             type != null; type = type.getSuperclass()) {
+            if (BULLET_TYPE.equals(type.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void filterHeadshot(Object event, PreAccess access) {
@@ -104,15 +117,7 @@ final class TaczHeadshotCompat {
             }
             Entity attacker = TaczEventAccess.call(access.attacker(), event)
                     instanceof Entity entity ? entity : null;
-            HeadshotsNetwork.spawnParticle(level,
-                    victim.position().add(0.0, victim.getEyeHeight(), 0.0),
-                    new Vec3(0.0, 0.2, 0.0), 15);
-            HeadshotScoreboardCriteria.record(victim, attacker);
-            if (attacker instanceof ServerPlayer player && !(victim instanceof ServerPlayer)) {
-                HeadshotTrigger.INSTANCE.trigger(player, victim);
-            } else if (victim instanceof ServerPlayer player) {
-                HeadshotTrigger.INSTANCE.trigger(player, victim);
-            }
+            HeadshotFeedback.apply(level, victim, attacker);
         } catch (RuntimeException | LinkageError error) {
             fail(error);
         }
@@ -121,7 +126,8 @@ final class TaczHeadshotCompat {
     private static void fail(Throwable error) {
         if (!failed) {
             failed = true;
-            IblisMod.LOGGER.error("Disabled failed TACZ headshot compatibility", error);
+            IblisHeadshotsMod.LOGGER.error(
+                    "Disabled failed TACZ Headshots compatibility", error);
         }
     }
 

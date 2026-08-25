@@ -28,7 +28,7 @@ public final class IblisJeiPlugin implements IModPlugin {
     public static final RecipeType<SteelProcessingRecipe> STEEL_PROCESSING = RecipeType.create(
             IblisMod.MOD_ID, "steel_processing", SteelProcessingRecipe.class);
     private static final ResourceLocation PLUGIN_ID =
-            ResourceLocation.fromNamespaceAndPath(IblisMod.MOD_ID, "jei");
+            new ResourceLocation(IblisMod.MOD_ID, "jei");
 
     @Override
     public ResourceLocation getPluginUid() {
@@ -58,7 +58,7 @@ public final class IblisJeiPlugin implements IModPlugin {
         }
 
         SteelProcessingRecipe firing = new SteelProcessingRecipe(
-                ResourceLocation.fromNamespaceAndPath(IblisMod.MOD_ID, "jei/steel_firing"),
+                new ResourceLocation(IblisMod.MOD_ID, "jei/steel_firing"),
                 List.of(
                         new ItemStack(IblisItems.IRON_COAL.get()),
                         new ItemStack(IblisItems.IRONORE_COAL.get())),
@@ -66,7 +66,7 @@ public final class IblisJeiPlugin implements IModPlugin {
                 new ItemStack(IblisItems.SLAG.get()),
                 List.of("iblis.jei.steel.fire"));
         SteelProcessingRecipe breaking = new SteelProcessingRecipe(
-                ResourceLocation.fromNamespaceAndPath(IblisMod.MOD_ID, "jei/slag_breaking"),
+                new ResourceLocation(IblisMod.MOD_ID, "jei/slag_breaking"),
                 List.of(new ItemStack(IblisItems.SLAG.get())),
                 List.of(),
                 new ItemStack(IblisItems.INGOT_STEEL.get()),

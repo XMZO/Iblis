@@ -9,7 +9,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -27,9 +26,6 @@ public final class CompatHooks {
             new CopyOnWriteArrayList<>();
     private static final List<SafeBiPredicate<ItemStack, Player>> AIM_FRAMES =
             new CopyOnWriteArrayList<>();
-    private static final List<SafePredicate<DamageSource>> NATIVE_HEADSHOT_SOURCES =
-            new CopyOnWriteArrayList<>();
-
     private CompatHooks() {
     }
 
@@ -51,12 +47,6 @@ public final class CompatHooks {
     public static void registerAimFrame(String id,
                                         BiPredicate<ItemStack, Player> predicate) {
         AIM_FRAMES.add(new SafeBiPredicate<>(id, predicate));
-    }
-
-    /** Marks damage already processed by an optional mod's native headshot system. */
-    public static void registerNativeHeadshotSource(String id,
-                                                    Predicate<DamageSource> predicate) {
-        NATIVE_HEADSHOT_SOURCES.add(new SafePredicate<>(id, predicate));
     }
 
     /** Returns true when an optional module owns this crafting result. */
@@ -90,15 +80,6 @@ public final class CompatHooks {
     public static boolean shouldRenderAimFrame(ItemStack stack, Player player) {
         for (SafeBiPredicate<ItemStack, Player> predicate : AIM_FRAMES) {
             if (predicate.test(stack, player)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static boolean hasNativeHeadshotDamage(DamageSource source) {
-        for (SafePredicate<DamageSource> predicate : NATIVE_HEADSHOT_SOURCES) {
-            if (predicate.test(source)) {
                 return true;
             }
         }
@@ -248,30 +229,4 @@ public final class CompatHooks {
         }
     }
 
-    private static final class SafePredicate<T> {
-        private final String id;
-        private final Predicate<T> predicate;
-        private volatile boolean failed;
-
-        private SafePredicate(String id, Predicate<T> predicate) {
-            this.id = Objects.requireNonNull(id, "id");
-            this.predicate = Objects.requireNonNull(predicate, "predicate");
-        }
-
-        private boolean test(T value) {
-            if (failed) {
-                return false;
-            }
-            try {
-                return predicate.test(value);
-            } catch (RuntimeException error) {
-                failed = true;
-                logFailure(id, error);
-            } catch (LinkageError error) {
-                failed = true;
-                logFailure(id, error);
-            }
-            return false;
-        }
-    }
 }

@@ -14,13 +14,13 @@ import net.minecraft.world.entity.player.Player;
 public final class IblisDamageTypes {
     public static final ResourceKey<DamageType> SHOTGUN = ResourceKey.create(
             Registries.DAMAGE_TYPE,
-            ResourceLocation.fromNamespaceAndPath(IblisMod.MOD_ID, "shotgun"));
+            new ResourceLocation(IblisMod.MOD_ID, "shotgun"));
     public static final ResourceKey<DamageType> SHOTGUN_ENDERMAN = ResourceKey.create(
             Registries.DAMAGE_TYPE,
-            ResourceLocation.fromNamespaceAndPath(IblisMod.MOD_ID, "shotgun_enderman"));
+            new ResourceLocation(IblisMod.MOD_ID, "shotgun_enderman"));
     public static final ResourceKey<DamageType> CROSSBOW = ResourceKey.create(
             Registries.DAMAGE_TYPE,
-            ResourceLocation.fromNamespaceAndPath(IblisMod.MOD_ID, "crossbow"));
+            new ResourceLocation(IblisMod.MOD_ID, "crossbow"));
 
     private IblisDamageTypes() {
     }

@@ -33,7 +33,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = IblisMod.MOD_ID, value = Dist.CLIENT)
 public final class IblisHud {
     private static final ResourceLocation VANILLA_ICONS =
-            ResourceLocation.withDefaultNamespace("textures/gui/icons.png");
+            new ResourceLocation("minecraft", "textures/gui/icons.png");
     private static final Random RANDOM = new Random();
     private static UUID healthPlayer;
     private static long healthUpdateCounter;

@@ -19,7 +19,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public final class HeadshotParticle extends Particle {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation TEXTURE = new ResourceLocation(
             "iblis_headshots", "textures/particle/particles.png");
 
     private final Vector3f[] corners = {

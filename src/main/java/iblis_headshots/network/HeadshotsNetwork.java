@@ -14,7 +14,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 public final class HeadshotsNetwork {
     private static final String PROTOCOL = "1";
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
-            ResourceLocation.fromNamespaceAndPath(IblisHeadshotsMod.MOD_ID, "main"),
+            new ResourceLocation(IblisHeadshotsMod.MOD_ID, "main"),
             () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
 
     private HeadshotsNetwork() {

@@ -36,7 +36,7 @@ public final class IblisSounds {
     }
 
     private static RegistryObject<SoundEvent> register(String name) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(IblisMod.MOD_ID, name);
+        ResourceLocation id = new ResourceLocation(IblisMod.MOD_ID, name);
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(id));
     }
 

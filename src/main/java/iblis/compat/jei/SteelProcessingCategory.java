@@ -3,6 +3,7 @@ package iblis.compat.jei;
 import iblis.registry.IblisItems;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
+import mezz.jei.api.gui.drawable.IDrawableStatic;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
@@ -16,10 +17,14 @@ import net.minecraft.resources.ResourceLocation;
 public final class SteelProcessingCategory implements IRecipeCategory<SteelProcessingRecipe> {
     private static final int WIDTH = 150;
     private static final int HEIGHT = 58;
+    private final IDrawable background;
     private final IDrawable icon;
+    private final IDrawableStatic slotBackground;
 
     public SteelProcessingCategory(IGuiHelper guiHelper) {
+        background = guiHelper.createBlankDrawable(WIDTH, HEIGHT);
         icon = guiHelper.createDrawableItemStack(IblisItems.INGOT_STEEL.get().getDefaultInstance());
+        slotBackground = guiHelper.getSlotDrawable();
     }
 
     @Override
@@ -30,6 +35,11 @@ public final class SteelProcessingCategory implements IRecipeCategory<SteelProce
     @Override
     public Component getTitle() {
         return Component.translatable("iblis.jei.steel_processing");
+    }
+
+    @Override
+    public IDrawable getBackground() {
+        return background;
     }
 
     @Override
@@ -51,18 +61,18 @@ public final class SteelProcessingCategory implements IRecipeCategory<SteelProce
     public void setRecipe(IRecipeLayoutBuilder builder, SteelProcessingRecipe recipe,
                           IFocusGroup focuses) {
         int inputX = recipe.catalysts().isEmpty() ? 28 : 8;
-        builder.addInputSlot(inputX, 7)
-                .setStandardSlotBackground()
+        builder.addSlot(RecipeIngredientRole.INPUT, inputX, 7)
+                .setBackground(slotBackground, -1, -1)
                 .addItemStacks(recipe.inputs());
 
         if (!recipe.catalysts().isEmpty()) {
             builder.addSlot(RecipeIngredientRole.CATALYST, 46, 7)
-                    .setStandardSlotBackground()
+                    .setBackground(slotBackground, -1, -1)
                     .addItemStacks(recipe.catalysts());
         }
 
-        builder.addOutputSlot(124, 7)
-                .setOutputSlotBackground()
+        builder.addSlot(RecipeIngredientRole.OUTPUT, 124, 7)
+                .setBackground(slotBackground, -1, -1)
                 .addItemStack(recipe.output());
     }
 

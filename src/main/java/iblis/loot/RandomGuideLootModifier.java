@@ -25,9 +25,9 @@ public final class RandomGuideLootModifier extends LootModifier {
     private static final String[] TARGET_PATH_PARTS = {
             "pyramid", "city", "jungle_temple", "simple_dungeon", "library", "mansion"
     };
-    private static final ResourceLocation LIBRARY_LOOT = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation LIBRARY_LOOT = new ResourceLocation(
             IblisMod.MOD_ID, "library_loot");
-    private static final ResourceLocation DUNGEON_LOOT = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation DUNGEON_LOOT = new ResourceLocation(
             IblisMod.MOD_ID, "dungeon_loot");
     private static final int MAX_LABYRINTH_LOOT_LEVEL = 15;
 

@@ -27,7 +27,7 @@ public final class IblisJadePlugin implements IWailaPlugin {
     private enum SteelMixtureProvider implements IBlockComponentProvider {
         INSTANCE;
 
-        private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(
+        private static final ResourceLocation UID = new ResourceLocation(
                 IblisMod.MOD_ID, "steel_mixture_progress");
 
         @Override

@@ -1,4 +1,4 @@
-package iblis.compat.tacz;
+package iblis_headshots.compat.tacz;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -7,7 +7,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 
-/** Cached, fail-fast access to TACZ's optional public Forge events. */
+/** Reflection bridge that never initializes optional TACZ classes during lookup. */
 final class TaczEventAccess {
     private TaczEventAccess() {
     }

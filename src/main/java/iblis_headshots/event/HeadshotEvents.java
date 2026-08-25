@@ -2,12 +2,12 @@ package iblis_headshots.event;
 
 import com.google.common.collect.Multimap;
 import iblis_headshots.IblisHeadshotsMod;
+import iblis_headshots.compat.NativeHeadshotSources;
 import iblis_headshots.config.HeadshotsConfig;
 import iblis_headshots.util.HeadgearProtection;
 import iblis_headshots.util.HeadshotFeedback;
 import iblis_headshots.util.HeadshotGeometry;
 import iblis_headshots.util.HeadshotRules;
-import iblis.compat.CompatHooks;
 import iblis.damage.IblisDamageTypes;
 import iblis.util.FirearmDamageRules;
 import java.util.ArrayList;
@@ -75,7 +75,7 @@ public final class HeadshotEvents {
 
         // Some firearms calculate their exact path and headshot once at the source.
         if (IblisDamageTypes.isShotgun(source)
-                || CompatHooks.hasNativeHeadshotDamage(source)) {
+                || NativeHeadshotSources.hasNativeHeadshotDamage(source)) {
             return damage;
         }
 

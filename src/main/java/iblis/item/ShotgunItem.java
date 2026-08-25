@@ -40,23 +40,23 @@ import net.minecraftforge.event.level.BlockEvent;
 public final class ShotgunItem extends FirearmItem {
     private static final int MAX_BLOCK_PENETRATIONS = 32;
     private static final TagKey<Block> SHOTGUN_BREAKABLE_VEGETATION = BlockTags.create(
-            ResourceLocation.fromNamespaceAndPath(
+            new ResourceLocation(
                     IblisMod.MOD_ID, "shotgun_breakable_vegetation"));
     private static final TagKey<Block> SHOTGUN_BREAKABLE_WOODEN_BARRIERS = BlockTags.create(
-            ResourceLocation.fromNamespaceAndPath(
+            new ResourceLocation(
                     IblisMod.MOD_ID, "shotgun_breakable_wooden_barriers"));
     private static final TagKey<Block> SHOTGUN_BREAKABLE_FRAGILE_BLOCKS = BlockTags.create(
-            ResourceLocation.fromNamespaceAndPath(
+            new ResourceLocation(
                     IblisMod.MOD_ID, "shotgun_breakable_fragile_blocks"));
     private static final TagKey<Block> SHOTGUN_PENETRABLE_DOORS = BlockTags.create(
-            ResourceLocation.fromNamespaceAndPath(
+            new ResourceLocation(
                     IblisMod.MOD_ID, "shotgun_penetrable_doors"));
     private static final TagKey<Block> LEGACY_GLASS = BlockTags.create(
-            ResourceLocation.fromNamespaceAndPath("forge", "glass"));
+            new ResourceLocation("forge", "glass"));
     private static final TagKey<Block> LEGACY_GLASS_PANES = BlockTags.create(
-            ResourceLocation.fromNamespaceAndPath("forge", "glass_panes"));
+            new ResourceLocation("forge", "glass_panes"));
     private static final TagKey<Block> LEGACY_ICE = BlockTags.create(
-            ResourceLocation.fromNamespaceAndPath("minecraft", "ice"));
+            new ResourceLocation("minecraft", "ice"));
 
     public ShotgunItem(Properties properties) {
         super(properties);
@@ -314,7 +314,7 @@ public final class ShotgunItem extends FirearmItem {
     public boolean isValidRepairItem(ItemStack stack, ItemStack repairCandidate) {
         return repairCandidate.is(net.minecraft.tags.TagKey.create(
                 net.minecraft.core.registries.Registries.ITEM,
-                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("forge", "ingots/steel")))
+                new net.minecraft.resources.ResourceLocation("forge", "ingots/steel")))
                 || super.isValidRepairItem(stack, repairCandidate);
     }
 }

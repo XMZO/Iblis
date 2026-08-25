@@ -153,7 +153,7 @@ public final class IblisClientEvents {
         }
 
         private static ResourceLocation id(String path) {
-            return ResourceLocation.fromNamespaceAndPath(IblisMod.MOD_ID, path);
+            return new ResourceLocation(IblisMod.MOD_ID, path);
         }
 
         private static boolean isUsing(net.minecraft.world.entity.LivingEntity entity,

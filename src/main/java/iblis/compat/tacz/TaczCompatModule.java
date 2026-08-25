@@ -9,8 +9,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 /** Optional TACZ integration; features remain independent and removable. */
 public final class TaczCompatModule implements CompatModule {
     private static final List<Feature> FEATURES = List.of(
-            new Feature("sharpshooting experience", ignored -> TaczExperienceCompat.register()),
-            new Feature("headshots", ignored -> TaczHeadshotCompat.register())
+            new Feature("sharpshooting experience", ignored -> TaczExperienceCompat.register())
     );
 
     @Override

@@ -109,11 +109,11 @@ public final class IblisCommands {
 
     private static ResourceLocation modernAttributeId(String name) {
         if (name.startsWith("iblis.")) {
-            return ResourceLocation.fromNamespaceAndPath(IblisMod.MOD_ID,
+            return new ResourceLocation(IblisMod.MOD_ID,
                     name.substring("iblis.".length()).toLowerCase(Locale.ROOT));
         }
         if (name.startsWith("generic.")) {
-            return ResourceLocation.withDefaultNamespace("generic."
+            return new ResourceLocation("minecraft", "generic."
                     + camelToSnake(name.substring("generic.".length())));
         }
         return null;

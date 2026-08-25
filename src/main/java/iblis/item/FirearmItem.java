@@ -74,16 +74,16 @@ public abstract class FirearmItem extends Item implements CustomLeftClickItem {
     private static final float DOOR_PENETRATION_DAMAGE_MULTIPLIER = 0.55F;
     private static final int SHOTGUN_SHIELD_COOLDOWN_TICKS = 40;
     private static final TagKey<EntityType<?>> SHOTGUN_BREAKABLE_BOATS = TagKey.create(
-            Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(
+            Registries.ENTITY_TYPE, new ResourceLocation(
                     IblisMod.MOD_ID, "shotgun_breakable_boats"));
     private static final TagKey<EntityType<?>> FIREARM_BREAKABLE_TARGETS = TagKey.create(
-            Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(
+            Registries.ENTITY_TYPE, new ResourceLocation(
                     IblisMod.MOD_ID, "firearm_breakable_targets"));
     private static final TagKey<EntityType<?>> SHOTGUN_ENDERMAN_TARGETS = TagKey.create(
-            Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(
+            Registries.ENTITY_TYPE, new ResourceLocation(
                     IblisMod.MOD_ID, "shotgun_enderman_targets"));
     private static final TagKey<Item> SHOTGUN_SHIELD_COOLDOWN_IMMUNE = TagKey.create(
-            Registries.ITEM, ResourceLocation.fromNamespaceAndPath(
+            Registries.ITEM, new ResourceLocation(
                     IblisMod.MOD_ID, "shotgun_shield_cooldown_immune"));
     private static final java.util.UUID PROJECTILE_DAMAGE_MODIFIER =
             java.util.UUID.fromString("75717fc3-7f6f-0857-4cdf-000009f5f2d7");

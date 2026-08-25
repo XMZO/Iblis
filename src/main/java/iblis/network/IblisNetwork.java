@@ -28,7 +28,7 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 public final class IblisNetwork {
     private static final String PROTOCOL = "2";
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
-            ResourceLocation.fromNamespaceAndPath(IblisMod.MOD_ID, "main"),
+            new ResourceLocation(IblisMod.MOD_ID, "main"),
             () -> PROTOCOL,
             PROTOCOL::equals,
             PROTOCOL::equals);

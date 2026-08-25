@@ -11,7 +11,7 @@ import net.minecraftforge.common.crafting.conditions.IConditionSerializer;
 
 public record ConfigEnabledCondition(String option, boolean expected) implements ICondition {
     public static final ResourceLocation ID =
-            ResourceLocation.fromNamespaceAndPath(IblisMod.MOD_ID, "config_enabled");
+            new ResourceLocation(IblisMod.MOD_ID, "config_enabled");
 
     @Override
     public ResourceLocation getID() {

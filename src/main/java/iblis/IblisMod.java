@@ -19,6 +19,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
@@ -29,6 +30,11 @@ import org.slf4j.Logger;
 public final class IblisMod {
     public static final String MOD_ID = "iblis";
     public static final Logger LOGGER = LogUtils.getLogger();
+
+    /** Keeps the mod loadable on Forge 47.0.x-47.3.x, which may reflect a no-arg constructor. */
+    public IblisMod() {
+        this(FMLJavaModLoadingContext.get());
+    }
 
     public IblisMod(FMLJavaModLoadingContext context) {
         IblisConfigPaths.prepare();
@@ -50,7 +56,8 @@ public final class IblisMod {
         modBus.addListener(IblisNetwork::onCommonSetup);
         modBus.addListener(IblisMod::onCommonSetup);
 
-        context.registerConfig(ModConfig.Type.COMMON, IblisConfig.SPEC, IblisConfigPaths.COMMON);
+        ModLoadingContext.get().registerConfig(
+                ModConfig.Type.COMMON, IblisConfig.SPEC, IblisConfigPaths.COMMON);
     }
 
     private static void onCommonSetup(FMLCommonSetupEvent event) {

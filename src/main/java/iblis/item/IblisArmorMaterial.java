@@ -20,7 +20,7 @@ public enum IblisArmorMaterial implements ArmorMaterial {
             Map.of(ArmorItem.Type.BOOTS, 6, ArmorItem.Type.LEGGINGS, 12,
                     ArmorItem.Type.CHESTPLATE, 16, ArmorItem.Type.HELMET, 6),
             () -> Ingredient.of(TagKey.create(Registries.ITEM,
-                    ResourceLocation.fromNamespaceAndPath("forge", "ingots/steel"))));
+                    new ResourceLocation("forge", "ingots/steel"))));
 
     private static final Map<ArmorItem.Type, Integer> DURABILITY = new EnumMap<>(Map.of(
             ArmorItem.Type.BOOTS, 13,

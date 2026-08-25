@@ -16,7 +16,7 @@ import net.minecraft.util.Mth;
 
 /** Ports the original low-poly blade instead of displaying a flat inventory sprite. */
 public final class ThrowingKnifeRenderer extends EntityRenderer<ThrowingKnifeEntity> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation TEXTURE = new ResourceLocation(
             IblisMod.MOD_ID, "textures/particle/particles.png");
     private static final float TEXEL = 1.0F / 256.0F;
 
