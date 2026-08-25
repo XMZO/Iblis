@@ -16,6 +16,16 @@ import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 public final class IblisConfig {
     private static final int GAMEPLAY_SYNC_VERSION = 3;
+    private static final double DEFAULT_SKILL_TRAINING_BASE_RESISTANCE = 1.0;
+    private static final double DEFAULT_SKILL_TRAINING_LINEAR_RESISTANCE = 0.4;
+    private static final double DEFAULT_SKILL_TRAINING_QUADRATIC_RESISTANCE = 0.006;
+    private static final double DEFAULT_BONUS_BASE_MULTIPLIER = 1.0;
+    private static final double DEFAULT_BONUS_SOFT_CAP_SCALE = 20.0;
+    private static final double DEFAULT_CHARACTERISTIC_COST_BASE_MULTIPLIER = 1.0;
+    private static final int DEFAULT_CHARACTERISTIC_COST_MID_START_LEVEL = 10;
+    private static final double DEFAULT_CHARACTERISTIC_COST_MID_MULTIPLIER = 0.15;
+    private static final int DEFAULT_CHARACTERISTIC_COST_LATE_START_LEVEL = 20;
+    private static final double DEFAULT_CHARACTERISTIC_COST_LATE_MULTIPLIER = 0.2;
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
     private static final Map<PlayerSkill, ForgeConfigSpec.BooleanValue> SKILL_ENABLED =
             new EnumMap<>(PlayerSkill.class);
@@ -78,16 +88,24 @@ public final class IblisConfig {
     public static volatile int crossbowFireCooldownTicks = 12;
     public static volatile boolean shotgunHitsEndermen = true;
     public static volatile boolean shotgunDisablesShields = true;
-    public static volatile double skillTrainingBaseResistance = 1.0;
-    public static volatile double skillTrainingLinearResistance = 0.5;
-    public static volatile double skillTrainingQuadraticResistance = 0.0125;
-    public static volatile double bonusBaseMultiplier = 0.95;
-    public static volatile double bonusSoftCapScale = 30.0;
-    public static volatile double characteristicCostBaseMultiplier = 1.0;
-    public static volatile int characteristicCostMidStartLevel = 5;
-    public static volatile double characteristicCostMidMultiplier = 0.25;
-    public static volatile int characteristicCostLateStartLevel = 15;
-    public static volatile double characteristicCostLateMultiplier = 0.35;
+    public static volatile double skillTrainingBaseResistance =
+            DEFAULT_SKILL_TRAINING_BASE_RESISTANCE;
+    public static volatile double skillTrainingLinearResistance =
+            DEFAULT_SKILL_TRAINING_LINEAR_RESISTANCE;
+    public static volatile double skillTrainingQuadraticResistance =
+            DEFAULT_SKILL_TRAINING_QUADRATIC_RESISTANCE;
+    public static volatile double bonusBaseMultiplier = DEFAULT_BONUS_BASE_MULTIPLIER;
+    public static volatile double bonusSoftCapScale = DEFAULT_BONUS_SOFT_CAP_SCALE;
+    public static volatile double characteristicCostBaseMultiplier =
+            DEFAULT_CHARACTERISTIC_COST_BASE_MULTIPLIER;
+    public static volatile int characteristicCostMidStartLevel =
+            DEFAULT_CHARACTERISTIC_COST_MID_START_LEVEL;
+    public static volatile double characteristicCostMidMultiplier =
+            DEFAULT_CHARACTERISTIC_COST_MID_MULTIPLIER;
+    public static volatile int characteristicCostLateStartLevel =
+            DEFAULT_CHARACTERISTIC_COST_LATE_START_LEVEL;
+    public static volatile double characteristicCostLateMultiplier =
+            DEFAULT_CHARACTERISTIC_COST_LATE_MULTIPLIER;
     private static volatile Set<Legacy112Feature> legacy112Features = Set.of();
     private static volatile boolean remoteServerAuthority;
 
@@ -99,34 +117,44 @@ public final class IblisConfig {
         BUILDER.push("progression_balance");
         SKILL_TRAINING_BASE_RESISTANCE = BUILDER
                 .comment("Base divisor for all skill gains. Higher values train more slowly.")
-                .defineInRange("skill_training_base_resistance", 1.0, 0.01, 1000.0);
+                .defineInRange("skill_training_base_resistance",
+                        DEFAULT_SKILL_TRAINING_BASE_RESISTANCE, 0.01, 1000.0);
         SKILL_TRAINING_LINEAR_RESISTANCE = BUILDER
                 .comment("Extra skill-gain divisor per current skill point.")
-                .defineInRange("skill_training_linear_resistance", 0.5, 0.0, 1000.0);
+                .defineInRange("skill_training_linear_resistance",
+                        DEFAULT_SKILL_TRAINING_LINEAR_RESISTANCE, 0.0, 1000.0);
         SKILL_TRAINING_QUADRATIC_RESISTANCE = BUILDER
                 .comment("Extra divisor per squared skill point; controls late-game slowdown.")
-                .defineInRange("skill_training_quadratic_resistance", 0.0125, 0.0, 1000.0);
+                .defineInRange("skill_training_quadratic_resistance",
+                        DEFAULT_SKILL_TRAINING_QUADRATIC_RESISTANCE, 0.0, 1000.0);
         BONUS_BASE_MULTIPLIER = BUILDER
                 .comment("Multiplier applied before diminishing returns to progression bonuses.")
-                .defineInRange("bonus_base_multiplier", 0.95, 0.0, 1000.0);
+                .defineInRange("bonus_base_multiplier",
+                        DEFAULT_BONUS_BASE_MULTIPLIER, 0.0, 1000.0);
         BONUS_SOFT_CAP_SCALE = BUILDER
                 .comment("Progression value where bonus efficiency is roughly halved.")
-                .defineInRange("bonus_soft_cap_scale", 30.0, 0.01, 100000.0);
+                .defineInRange("bonus_soft_cap_scale",
+                        DEFAULT_BONUS_SOFT_CAP_SCALE, 0.01, 100000.0);
         CHARACTERISTIC_COST_BASE_MULTIPLIER = BUILDER
                 .comment("XP-level cost per characteristic level before surcharges.")
-                .defineInRange("characteristic_cost_base_multiplier", 1.0, 0.0, 1000.0);
+                .defineInRange("characteristic_cost_base_multiplier",
+                        DEFAULT_CHARACTERISTIC_COST_BASE_MULTIPLIER, 0.0, 1000.0);
         CHARACTERISTIC_COST_MID_START_LEVEL = BUILDER
                 .comment("Characteristic level after which the mid-game surcharge starts.")
-                .defineInRange("characteristic_cost_mid_start_level", 5, 1, 100000);
+                .defineInRange("characteristic_cost_mid_start_level",
+                        DEFAULT_CHARACTERISTIC_COST_MID_START_LEVEL, 1, 100000);
         CHARACTERISTIC_COST_MID_MULTIPLIER = BUILDER
                 .comment("Extra XP levels per level above the mid-game threshold.")
-                .defineInRange("characteristic_cost_mid_multiplier", 0.25, 0.0, 1000.0);
+                .defineInRange("characteristic_cost_mid_multiplier",
+                        DEFAULT_CHARACTERISTIC_COST_MID_MULTIPLIER, 0.0, 1000.0);
         CHARACTERISTIC_COST_LATE_START_LEVEL = BUILDER
                 .comment("Characteristic level after which the late-game surcharge starts.")
-                .defineInRange("characteristic_cost_late_start_level", 15, 1, 100000);
+                .defineInRange("characteristic_cost_late_start_level",
+                        DEFAULT_CHARACTERISTIC_COST_LATE_START_LEVEL, 1, 100000);
         CHARACTERISTIC_COST_LATE_MULTIPLIER = BUILDER
                 .comment("Extra XP levels per level above the late-game threshold.")
-                .defineInRange("characteristic_cost_late_multiplier", 0.35, 0.0, 1000.0);
+                .defineInRange("characteristic_cost_late_multiplier",
+                        DEFAULT_CHARACTERISTIC_COST_LATE_MULTIPLIER, 0.0, 1000.0);
         BUILDER.pop();
 
         BUILDER.push("firearms");
