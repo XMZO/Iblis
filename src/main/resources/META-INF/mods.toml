@@ -16,7 +16,7 @@ ${mod_description}
 
 [[mods]]
 modId="iblis_headshots"
-version="${mod_version}"
+version="${headshots_mod_version}"
 displayName="${headshots_mod_name}"
 displayURL="${mod_url}"
 authors="${mod_authors}"
