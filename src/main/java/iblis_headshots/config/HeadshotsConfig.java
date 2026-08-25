@@ -34,7 +34,7 @@ public final class HeadshotsConfig {
     public static volatile float playerHeadshotChance = 1.0F;
     public static volatile boolean playerHeadshotChanceAffectsPvp;
     public static volatile boolean headshotEntityWhitelistEnabled;
-    public static volatile boolean headshotEntityBlacklistEnabled = true;
+    public static volatile boolean headshotEntityBlacklistEnabled;
     public static volatile boolean preventTaczDoubleHeadshots;
 
     static {
@@ -72,8 +72,8 @@ public final class HeadshotsConfig {
                 .define("headshot_entity_whitelist_enabled", false);
         HEADSHOT_ENTITY_BLACKLIST_ENABLED = BUILDER.comment(
                         "If true, entities in config/iblis/headshot_entity_blacklist.txt cannot receive headshots.",
-                        "Ignored while the whitelist is enabled. Default true preserves existing behavior.")
-                .define("headshot_entity_blacklist_enabled", true);
+                        "Ignored while the whitelist is enabled. Default false leaves the file unused.")
+                .define("headshot_entity_blacklist_enabled", false);
         PREVENT_TACZ_DOUBLE_HEADSHOTS = BUILDER.comment(
                         "Use TACZ's native headshot damage and skip Iblis's second calculation.",
                         "False preserves the previous combined behavior.")
