@@ -5,6 +5,7 @@ import iblis.config.EditableConfigCategory;
 import iblis.config.EditableConfigValue;
 import iblis.config.IblisConfig;
 import iblis_headshots.config.HeadshotsConfig;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -273,7 +274,7 @@ public final class ModConfigScreens {
             if (number == Math.rint(number)) {
                 return String.format(Locale.ROOT, "%.1f", number);
             }
-            return Double.toString(number);
+            return BigDecimal.valueOf(number).stripTrailingZeros().toPlainString();
         }
     }
 
