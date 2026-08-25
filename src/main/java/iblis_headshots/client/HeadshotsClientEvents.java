@@ -1,8 +1,8 @@
 package iblis_headshots.client;
 
 import iblis_headshots.IblisHeadshotsMod;
-import iblis_headshots.config.HeadshotEntityBlacklist;
 import iblis_headshots.util.HeadgearProtection;
+import iblis_headshots.util.HeadshotRules;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -24,7 +24,7 @@ public final class HeadshotsClientEvents {
 
     @SubscribeEvent
     public static void itemTooltip(ItemTooltipEvent event) {
-        if (HeadshotEntityBlacklist.contains(EntityType.PLAYER)) {
+        if (!HeadshotRules.allowsHeadshots(EntityType.PLAYER)) {
             return;
         }
         float damageMultiplier = HeadgearProtection.damageMultiplier(event.getItemStack());

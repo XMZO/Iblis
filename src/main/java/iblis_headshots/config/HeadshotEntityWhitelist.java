@@ -16,22 +16,23 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
-public final class HeadshotEntityBlacklist {
+/** Entity types allowed to receive headshot damage when the whitelist is enabled. */
+public final class HeadshotEntityWhitelist {
     private static final String DEFAULT_CONTENT = String.join(System.lineSeparator(),
-            "# Listed entity types never receive headshot damage; head hits use body-shot damage.",
-            "# Remove '# ' from the next line to make players immune to headshots.",
-            "# Add other entities one per line as namespace:entity, e.g. minecraft:villager.",
-            "# Ignored while headshot_entity_whitelist_enabled is true.",
-            "# Restart the game or server after editing. Invalid or missing IDs are skipped.",
-            "# minecraft:player",
+            "# Enable headshot_entity_whitelist_enabled in the common config to use this file.",
+            "# Only listed Forge entity IDs can receive headshot damage when enabled.",
+            "# Add one ID per line, for example minecraft:zombie or modid:entity_name.",
+            "# Blank lines, comments, invalid IDs, and unknown IDs are skipped.",
+            "# Restart the game or server after editing.",
+            "# minecraft:zombie",
             "");
     private static volatile Set<EntityType<?>> values = Set.of();
 
-    private HeadshotEntityBlacklist() {
+    private HeadshotEntityWhitelist() {
     }
 
     public static void prepareFile() {
-        Path path = HeadshotsConfigPaths.entityBlacklist();
+        Path path = HeadshotsConfigPaths.entityWhitelist();
         if (Files.exists(path)) {
             return;
         }
@@ -43,24 +44,24 @@ public final class HeadshotEntityBlacklist {
             // Another startup task created the file first.
         } catch (IOException exception) {
             IblisHeadshotsMod.LOGGER.warn(
-                    "Could not create headshot entity blacklist {}", path, exception);
+                    "Could not create headshot entity whitelist {}", path, exception);
         }
     }
 
     public static void onCommonSetup(FMLCommonSetupEvent event) {
-        event.enqueueWork(HeadshotEntityBlacklist::load);
+        event.enqueueWork(HeadshotEntityWhitelist::load);
     }
 
     public static boolean contains(Entity entity) {
-        return contains(entity.getType());
+        return entity != null && contains(entity.getType());
     }
 
     public static boolean contains(EntityType<?> type) {
-        return values.contains(type);
+        return type != null && values.contains(type);
     }
 
     private static void load() {
-        Path path = HeadshotsConfigPaths.entityBlacklist();
+        Path path = HeadshotsConfigPaths.entityWhitelist();
         Set<EntityType<?>> updated = new HashSet<>();
         try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             String line;
@@ -88,12 +89,12 @@ public final class HeadshotEntityBlacklist {
             }
         } catch (IOException | RuntimeException exception) {
             IblisHeadshotsMod.LOGGER.error(
-                    "Could not load headshot entity blacklist {}; keeping previous values",
+                    "Could not load headshot entity whitelist {}; keeping previous values",
                     path, exception);
             return;
         }
         values = Set.copyOf(updated);
         IblisHeadshotsMod.LOGGER.info(
-                "Loaded {} headshot-immune entity types from {}", values.size(), path);
+                "Loaded {} headshot-whitelist entity types from {}", values.size(), path);
     }
 }
