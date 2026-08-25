@@ -34,7 +34,8 @@ public final class HeadshotRules {
     public static boolean allowsHeadshots(EntityType<?> type) {
         return HeadshotsConfig.headshotEntityWhitelistEnabled
                 ? HeadshotEntityWhitelist.contains(type)
-                : !HeadshotEntityBlacklist.contains(type);
+                : !HeadshotsConfig.headshotEntityBlacklistEnabled
+                || !HeadshotEntityBlacklist.contains(type);
     }
 
     public static float damageMultiplier(LivingEntity victim, Entity attacker) {

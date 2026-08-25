@@ -19,6 +19,7 @@ public final class HeadshotsConfig {
     private static final ForgeConfigSpec.DoubleValue PLAYER_HEADSHOT_CHANCE;
     private static final ForgeConfigSpec.BooleanValue PLAYER_HEADSHOT_CHANCE_AFFECTS_PVP;
     private static final ForgeConfigSpec.BooleanValue HEADSHOT_ENTITY_WHITELIST_ENABLED;
+    private static final ForgeConfigSpec.BooleanValue HEADSHOT_ENTITY_BLACKLIST_ENABLED;
     private static final ForgeConfigSpec.BooleanValue PREVENT_TACZ_DOUBLE_HEADSHOTS;
 
     public static final ForgeConfigSpec SPEC;
@@ -33,6 +34,7 @@ public final class HeadshotsConfig {
     public static volatile float playerHeadshotChance = 1.0F;
     public static volatile boolean playerHeadshotChanceAffectsPvp;
     public static volatile boolean headshotEntityWhitelistEnabled;
+    public static volatile boolean headshotEntityBlacklistEnabled = true;
     public static volatile boolean preventTaczDoubleHeadshots;
 
     static {
@@ -66,8 +68,12 @@ public final class HeadshotsConfig {
                 .define("player_headshot_chance_affects_pvp", false);
         HEADSHOT_ENTITY_WHITELIST_ENABLED = BUILDER.comment(
                         "If true, only entities in config/iblis/headshot_entity_whitelist.txt can receive headshots.",
-                        "The blacklist is ignored while the whitelist is enabled.")
+                        "This takes priority over the blacklist when enabled.")
                 .define("headshot_entity_whitelist_enabled", false);
+        HEADSHOT_ENTITY_BLACKLIST_ENABLED = BUILDER.comment(
+                        "If true, entities in config/iblis/headshot_entity_blacklist.txt cannot receive headshots.",
+                        "Ignored while the whitelist is enabled. Default true preserves existing behavior.")
+                .define("headshot_entity_blacklist_enabled", true);
         PREVENT_TACZ_DOUBLE_HEADSHOTS = BUILDER.comment(
                         "Use TACZ's native headshot damage and skip Iblis's second calculation.",
                         "False preserves the previous combined behavior.")
@@ -100,6 +106,7 @@ public final class HeadshotsConfig {
         playerHeadshotChance = PLAYER_HEADSHOT_CHANCE.get().floatValue();
         playerHeadshotChanceAffectsPvp = PLAYER_HEADSHOT_CHANCE_AFFECTS_PVP.get();
         headshotEntityWhitelistEnabled = HEADSHOT_ENTITY_WHITELIST_ENABLED.get();
+        headshotEntityBlacklistEnabled = HEADSHOT_ENTITY_BLACKLIST_ENABLED.get();
         preventTaczDoubleHeadshots = PREVENT_TACZ_DOUBLE_HEADSHOTS.get();
     }
 
@@ -134,6 +141,9 @@ public final class HeadshotsConfig {
                 EditableConfigValue.booleanValue(
                         "headshot_entity_whitelist_enabled",
                         HEADSHOT_ENTITY_WHITELIST_ENABLED),
+                EditableConfigValue.booleanValue(
+                        "headshot_entity_blacklist_enabled",
+                        HEADSHOT_ENTITY_BLACKLIST_ENABLED),
                 EditableConfigValue.booleanValue(
                         "prevent_tacz_double_headshots",
                         PREVENT_TACZ_DOUBLE_HEADSHOTS)));

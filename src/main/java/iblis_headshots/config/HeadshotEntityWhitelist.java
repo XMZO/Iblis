@@ -22,6 +22,7 @@ public final class HeadshotEntityWhitelist {
     private static final String DEFAULT_CONTENT = String.join(System.lineSeparator(),
             "# Enable headshot_entity_whitelist_enabled in the common config to use this file.",
             "# Only listed Forge entity IDs can receive headshot damage when enabled.",
+            "# This whitelist overrides the blacklist when enabled.",
             "# Add one ID per line, for example minecraft:zombie or modid:entity_name.",
             "# Blank lines, comments, invalid IDs, and unknown IDs are skipped.",
             "# Restart the game or server after editing.",
